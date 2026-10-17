@@ -517,7 +517,7 @@ const TEMPOS = {
   standard: { label:"Standard", period:3.484, inhale:1.706 },
   rapide:   { label:"Rapide",   period:2.800, inhale:1.392 }
 };
-const VOIX = ["trois","deux","une","retention","inspire","relache","repart","termine"];
+const VOIX = ["trois","deux","une","parti","retention","inspire","relache","repart","termine"];
 // grande inspiration avant la rétention poumons pleins : la durée de
 // sons/souffle/inspiration (l'inspiration du tempo lent), pour que l'orbe la suive
 const RECOVERY_IN = TEMPOS.lent.inhale;
@@ -677,114 +677,131 @@ function voice(key, at){
   return true;
 }
 
-/* --- deux platines : respirations et apnées, fondu croisé entre les deux --- */
+/* ------------------------------------------------------------
+   Musique : deux banques, deux zones.
+   - zone « breath » : préparation et respirations   → banque respiration
+   - zone « hold »   : apnées vides et pleines + reprise, jusqu'à ce que
+                       les respirations reprennent  → banque apnée
+   À chaque changement de zone : un morceau tiré au hasard dans la banque,
+   joué depuis le début (jamais le dernier joué de cette banque), en fondu
+   croisé avec la zone précédente.
+   Si un morceau se termine avant la fin de la zone : un autre morceau de la
+   même banque, au hasard, enchaîné avec le fondu réglé dans l'appli.
+   Une banque vide laisse jouer l'autre.
+   ------------------------------------------------------------ */
 const player = {
-  decks:{}, last:{}, zone:null, timer:null, running:false,
+  running:false, zone:null, cur:null, prev:null, ready:{}, last:{}, seq:0, timer:null, token:null,
 
-  pool(kind){ return kind === "breath" ? CAT.respiration : CAT.apnee; },
+  bank(z){ return z === "breath" ? CAT.respiration : CAT.apnee; },
+  /* banque réellement utilisée pour une zone (repli sur l'autre si vide) */
+  bankFor(z){
+    const o = z === "breath" ? "hold" : "breath";
+    return this.bank(z).length ? z : (this.bank(o).length ? o : null);
+  },
 
-  /* tirage au sort, jamais deux fois la même d'affilée */
-  pick(kind){
-    const p = this.pool(kind);
+  pick(b, avoid){
+    const p = this.bank(b);
     if (!p.length) return null;
     if (p.length === 1) return p[0];
-    const avail = p.filter(x => x !== this.last[kind]);
-    const c = avail[Math.floor(Math.random() * avail.length)];
-    this.last[kind] = c;
+    const avail = p.filter(x => x !== avoid);
+    return avail[Math.floor(Math.random() * avail.length)];
+  },
+
+  /* tire et décode un morceau à l'avance, pour que la bascule soit immédiate */
+  prepare(b, avoid){
+    const path = this.pick(b, avoid);
+    if (!path) return Promise.resolve(null);
+    return decodePath(path).then(buf => buf ? { path, buf, bank:b } : null);
+  },
+
+  play(item, t, fadeIn){
+    const src = ctx.createBufferSource(); src.buffer = item.buf;
+    const g = ctx.createGain();
+    src.connect(g); g.connect(musicGain);
+    const dur = item.buf.duration;
+    const xf = Math.min(S.crossfade, dur / 3);
+    fadeIn = Math.min(fadeIn, dur / 3);
+    if (fadeIn > .05){
+      g.gain.setValueAtTime(.0001, t);
+      g.gain.exponentialRampToValueAtTime(1, t + fadeIn);
+    } else g.gain.setValueAtTime(1, t);
+    if (xf > .05){
+      g.gain.setValueAtTime(1, t + dur - xf);
+      g.gain.exponentialRampToValueAtTime(.0001, t + dur);
+    }
+    src.start(t);
+    try { src.stop(t + dur + .1); } catch(e){}
+    const c = { src, g, path:item.path, bank:item.bank, start:t, dur, xf, chainAt:t + dur - xf, chained:false };
+    src.onended = () => this.release(item.path);
+    this.cur = c;
+    this.last[item.bank] = item.path;
     return c;
   },
 
-  deck(kind){
-    if (!this.decks[kind]){
-      const g = ctx.createGain(); g.gain.value = .0001; g.connect(musicGain);
-      this.decks[kind] = { g, buf:null, path:null, live:[], nextStart:0 };
-    }
-    return this.decks[kind];
-  },
-
-  clearDeck(d){
-    d.live.forEach(s => { try { s.stop(); } catch(e){} });
-    d.live = [];
-  },
-
-  async load(kind){
-    const d = this.deck(kind);
-    const path = this.pick(kind);
-    if (!path){ d.buf = null; this.clearDeck(d); return; }
-    const buf = await decodePath(path);
-    if (!buf || !this.running) return;
-    const prev = d.path;
-    this.clearDeck(d);
-    d.buf = buf; d.path = path;
-    d.nextStart = now() + .08;
-    this.schedule(d);
-    // libère la mémoire du morceau précédent s'il n'est plus sur aucune platine
-    if (prev && prev !== path && !Object.values(this.decks).some(x => x.path === prev))
-      bufCache.delete(prev);
-  },
-
-  /* boucle sans fin : la piste est replanifiée avant sa propre fin, avec fondu */
-  schedule(d){
-    if (!d.buf) return;
-    const t0 = Math.max(d.nextStart, now() + .05);
-    const dur = d.buf.duration;
-    const xf = Math.min(S.crossfade, dur / 3);
-    const src = ctx.createBufferSource(); src.buffer = d.buf;
-    const g = ctx.createGain();
-    src.connect(g); g.connect(d.g);
-    if (xf > .05){
-      g.gain.setValueAtTime(.0001, t0);
-      g.gain.exponentialRampToValueAtTime(1, t0 + xf);
-      g.gain.setValueAtTime(1, t0 + dur - xf);
-      g.gain.exponentialRampToValueAtTime(.0001, t0 + dur);
-    } else g.gain.setValueAtTime(1, t0);
-    src.start(t0);
-    try { src.stop(t0 + dur + .2); } catch(e){}
-    d.live.push(src);
-    src.onended = () => { d.live = d.live.filter(s => s !== src); };
-    d.nextStart = t0 + dur - xf;
-  },
-
-  /* bascule de zone ; sans piste dans une banque, l'autre continue */
-  setZone(z, sec = ZONE_FADE){
-    if (!this.running) return;
-    const other = z === "breath" ? "hold" : "breath";
-    const target = this.pool(z).length ? z : (this.pool(other).length ? other : null);
-    if (!target || target === this.zone) return;
-    this.zone = target;
-    ["breath", "hold"].forEach(k => {
-      const d = this.decks[k]; if (!d) return;
-      const v = k === target ? 1 : .0001, t = now();
-      try {
-        d.g.gain.cancelScheduledValues(t);
-        d.g.gain.setValueAtTime(Math.max(.0001, d.g.gain.value), t);
-        d.g.gain.exponentialRampToValueAtTime(v, t + sec);
-      } catch(e){}
-    });
-  },
-
-  async start(){
-    this.stop();
-    if (!CAT.respiration.length && !CAT.apnee.length) return;
-    this.decks = {}; this.zone = null; this.running = true;
-    this.deck("breath"); this.deck("hold");
-    await this.load("breath");
-    if (!this.running) return;
-    this.setZone(run && run.phase === "hold" ? "hold" : "breath", .8);
+  /* coupe un morceau en fondu (changement de zone ou fin de séance) */
+  fadeAway(c, sec){
+    if (!c) return;
     const t = now();
-    musicGain.gain.cancelScheduledValues(t);
-    musicGain.gain.setValueAtTime(.0001, t);
-    musicGain.gain.exponentialRampToValueAtTime(Math.max(.0002, S.musicVol / 100), t + 3);
-    this.timer = setInterval(() => this.tick(), 1000);
-    this.load("hold");   // prête en tâche de fond pour la première apnée
+    try {
+      c.g.gain.cancelScheduledValues(t);
+      c.g.gain.setValueAtTime(Math.max(.0001, c.g.gain.value), t);
+      c.g.gain.exponentialRampToValueAtTime(.0001, t + sec);
+      c.src.stop(t + sec + .05);
+    } catch(e){}
+  },
+
+  /* libère le cache d'un morceau terminé (un morceau déjà préparé garde sa propre référence) */
+  release(path){
+    if (this.cur && this.cur.path === path) return;
+    bufCache.delete(path);
+  },
+
+  async enter(z){
+    if (!this.running || z === this.zone) return;
+    this.zone = z;
+    const b = this.bankFor(z);
+    if (!b) return;
+    const seq = ++this.seq;
+    const old = this.cur;
+    this.fadeAway(old, ZONE_FADE);
+    this.fadeAway(this.prev, ZONE_FADE);      // morceau encore en train de s'effacer
+    this.cur = null; this.prev = null;
+    this.ready.chain = null;
+    let item = this.ready[b] ? await this.ready[b] : null;
+    this.ready[b] = null;
+    if (!item || item.path === this.last[b]) item = await this.prepare(b, this.last[b]);
+    if (seq !== this.seq || !this.running || !item) return;
+    this.play(item, now() + .05, old ? ZONE_FADE : 1.5);
+    // prépare dès maintenant le premier morceau de l'autre zone
+    const o = this.bankFor(z === "breath" ? "hold" : "breath");
+    if (o && o !== b) this.ready[o] = this.prepare(o, this.last[o]);
   },
 
   tick(){
-    if (!this.running) return;
-    ["breath", "hold"].forEach(k => {
-      const d = this.decks[k];
-      if (d && d.buf && d.nextStart - now() < 8) this.schedule(d);
-    });
+    const c = this.cur;
+    if (!this.running || !c) return;
+    const left = c.chainAt - now();
+    // morceau suivant de la même banque, préparé 25 s avant la fin
+    if (left < 25 && !this.ready.chain) this.ready.chain = this.prepare(c.bank, c.path);
+    if (left < .5 && !c.chained){
+      c.chained = true;
+      const seq = this.seq, p = this.ready.chain;
+      p.then(item => {
+        if (seq !== this.seq || !this.running || this.cur !== c) return;
+        this.ready.chain = null;
+        if (item){ this.prev = c; this.play(item, Math.max(c.chainAt, now() + .05), c.xf); }
+      });
+    }
+  },
+
+  start(){
+    this.stop();
+    if (!CAT.respiration.length && !CAT.apnee.length) return;
+    this.running = true; this.zone = null; this.cur = null; this.ready = {};
+    const t = now();
+    musicGain.gain.cancelScheduledValues(t);
+    musicGain.gain.setValueAtTime(Math.max(.0002, S.musicVol / 100), t);
+    this.timer = setInterval(() => this.tick(), 250);
   },
 
   fadeOut(sec = 3){
@@ -795,6 +812,7 @@ const player = {
       musicGain.gain.setValueAtTime(Math.max(.0001, musicGain.gain.value), t);
       musicGain.gain.exponentialRampToValueAtTime(.0001, t + sec);
     } catch(e){}
+    this.seq++;
     const token = this.token = {};
     setTimeout(() => { if (this.token === token) this.stop(); }, sec * 1000 + 150);
   },
@@ -802,9 +820,10 @@ const player = {
   stop(){
     this.running = false;
     this.token = null;
+    this.seq++;
     if (this.timer){ clearInterval(this.timer); this.timer = null; }
-    Object.values(this.decks).forEach(d => this.clearDeck(d));
-    this.decks = {};
+    [this.cur, this.prev].forEach(c => { if (c){ try { c.src.stop(); } catch(e){} } });
+    this.cur = null; this.prev = null; this.ready = {}; this.zone = null;
     // ne garde en mémoire que les sons courts
     const keep = new Set([...Object.values(CAT.voix), ...Object.values(CAT.souffle)]);
     [...bufCache.keys()].forEach(k => { if (!keep.has(k)) bufCache.delete(k); });
@@ -902,6 +921,7 @@ async function startSession(){
   run = { cycle:0, phase:"prep", breath:-1, sched:0, t0:now(), dur:S.prep,
           holds:[], holdStart:0, holdVoiced:false, ended:false };
   player.start();
+  player.enter("breath");               // la musique des respirations démarre dès la préparation
   if (S.prep === 0) enterBreathing(); else enterPrep();
   if (!raf) loop();
 }
@@ -913,6 +933,11 @@ function enterPrep(){
   el("hint").textContent = "Installe-toi. Assis ou allongé, le dos libre.";
   el("hint").classList.remove("pulse");
   el("skip").hidden = true;
+  // décompte vocal des trois dernières secondes, calé sur l'horloge audio
+  [3, 2, 1].forEach(k => {
+    const at = run.t0 + run.dur - k;
+    if (at >= now() - .05) voice(["", "une", "deux", "trois"][k], at);
+  });
 }
 
 function enterBreathing(){
@@ -930,13 +955,9 @@ function enterBreathing(){
   el("hint").textContent = "Inspire à fond par le ventre, laisse l'expiration se faire seule.";
   el("hint").classList.remove("pulse");
   el("skip").hidden = false;
-  if (run.cycle > 0){
-    voice("repart");
-    player.load("breath");              // nouvelle piste à chaque cycle
-    const c = run.cycle;                // nouvelle apnée, une fois le fondu terminé
-    setTimeout(() => { if (run && run.cycle === c && player.running) player.load("hold"); }, (ZONE_FADE + 1) * 1000);
-  }
-  player.setZone("breath");
+  if (first) voice("parti", run.t0);    // « c'est parti » avec la première respiration
+  else voice("repart");
+  player.enter("breath");               // nouveau morceau de la banque respiration, depuis le début
 }
 
 /* programme souffle, décompte et annonce de rétention sur l'horloge audio */
@@ -971,7 +992,7 @@ function enterHold(natural){
   el("skip").hidden = true;
   orbScale(.42);
   if (!run.holdVoiced){ voice("retention"); run.holdVoiced = true; }
-  player.setZone("hold");
+  player.enter("hold");                 // banque apnée jusqu'au retour des respirations
 }
 
 function enterRecovery(){
@@ -1030,7 +1051,12 @@ function endSession(aborted){
   run.ended = true;
   if (raf){ cancelAnimationFrame(raf); raf = null; }
   releaseWake();
-  if (aborted) stopAllGuides(); else voice("termine");
+  if (aborted) stopAllGuides();
+  else {
+    const at = now() + .03;
+    voice("termine", at);
+    if (expiBuf) playBuf(expiBuf, at, guideGain);   // expiration lente avec « c'est terminé »
+  }
   player.fadeOut(aborted ? 1.2 : 4);
 
   const holds = run.holds.slice();

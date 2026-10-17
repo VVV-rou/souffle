@@ -14,7 +14,7 @@ from urllib.parse import quote
 RACINE = Path(__file__).resolve().parent.parent
 SONS = RACINE / "sons"
 EXT = {".mp3", ".m4a", ".aac", ".wav", ".aif", ".aiff", ".caf", ".flac", ".mp4"}
-VOIX = ["trois", "deux", "une", "retention", "inspire", "relache", "repart", "termine"]
+VOIX = ["trois", "deux", "une", "parti", "retention", "inspire", "relache", "repart", "termine"]
 TEMPOS = ["lent", "standard", "rapide", "inspiration", "expiration"]
 
 
