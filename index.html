@@ -138,6 +138,25 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border-radius:50%;bac
 }
 .sound-list b{color:var(--ink-2);font-weight:600}
 
+/* musiques importées sur l'appareil */
+.track-list{display:flex;flex-direction:column;gap:8px;margin-bottom:12px}
+.track{display:flex;align-items:center;gap:8px;background:var(--surface-2);border-radius:10px;padding:8px 8px 8px 13px}
+.track-name{flex:1;min-width:0;font-size:13.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.track-dur{font-family:var(--font-num);font-size:12px;color:var(--ink-3);flex:none}
+.track button{flex:none;width:32px;height:32px;border-radius:8px;color:var(--ink-3);display:grid;place-items:center;font-size:15px;line-height:1}
+.track button:active{background:var(--line-2);color:var(--ink)}
+.empty-note{font-size:13px;color:var(--ink-3);background:var(--surface-2);border-radius:10px;padding:12px 13px;line-height:1.5;margin-bottom:12px}
+.btn-ghost{
+  display:block;width:100%;padding:12px;border-radius:11px;border:1px dashed var(--line-2);
+  color:var(--ink-2);font-size:14px;font-weight:500;text-align:center;cursor:pointer;
+}
+.btn-ghost:active{background:var(--surface-2)}
+/* l'input reste focusable : display:none casse le sélecteur de fichiers sur iOS */
+.vh{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+.vh:focus-visible + label.btn-ghost{outline:2px solid var(--breath);outline-offset:3px}
+.note{font-size:12.5px;line-height:1.5;border-radius:10px;padding:10px 12px;margin-top:10px;background:var(--surface-2);color:var(--ink-2)}
+.note.warn{background:color-mix(in srgb,var(--alert) 13%,var(--surface-2));color:#F5C8BD;border:1px solid color-mix(in srgb,var(--alert) 32%,transparent)}
+
 /* historique */
 .pb{display:flex;align-items:baseline;gap:10px;margin-bottom:16px;padding-bottom:16px;border-bottom:1px solid var(--line)}
 .pb-num{font-family:var(--font-num);font-size:30px;color:var(--hold);font-variant-numeric:tabular-nums}
@@ -439,6 +458,23 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border-radius:50%;bac
         <input type="range" id="s-gvol" min="0" max="100" step="1" value="70" aria-label="Volume du guidage">
         <div class="row-sub">Souffle et annonces de phase</div>
       </div>
+
+      <div class="sub-head">Musiques des respirations</div>
+      <div class="track-list" id="list-breath"></div>
+      <div class="empty-note" id="empty-breath">Aucun morceau. Un morceau est tiré au hasard à chaque cycle de respirations&nbsp;; s'il se termine avant la fin, un autre prend le relais.</div>
+      <input type="file" id="file-breath" class="vh" multiple accept="audio/*,.mp3,.m4a,.aac,.wav,.aif,.aiff">
+      <label class="btn-ghost" for="file-breath">＋ Ajouter des morceaux</label>
+      <div class="note" id="status-breath" hidden></div>
+
+      <div class="sub-head">Musiques des apnées</div>
+      <div class="track-list" id="list-hold"></div>
+      <div class="empty-note" id="empty-hold">Aucun morceau. Joués de la rétention poumons vides jusqu'au retour des respirations, reprise comprise.</div>
+      <input type="file" id="file-hold" class="vh" multiple accept="audio/*,.mp3,.m4a,.aac,.wav,.aif,.aiff">
+      <label class="btn-ghost" for="file-hold">＋ Ajouter des morceaux</label>
+      <div class="note" id="status-hold" hidden></div>
+
+      <div class="row-sub" style="margin-top:14px">Les musiques restent sur cet appareil, jamais en ligne. Importées une fois, elles sont conservées d'une ouverture à l'autre et marchent hors ligne.</div>
+      <div class="note warn" id="standalone-note" hidden>Tu es dans Safari&nbsp;: l'app installée sur l'écran d'accueil a son propre stockage. Importe tes musiques depuis l'app installée, sinon elle ne les verra pas.</div>
     </section>
 
     <section class="card">
@@ -557,6 +593,7 @@ sanitize();
    Catalogue des sons (sons/sons.json, généré au déploiement)
    ============================================================ */
 let CAT = { respiration:[], apnee:[], voix:{}, souffle:{} };
+let REPO = { respiration:[], apnee:[] };   // musiques éventuellement présentes dans le dépôt
 let catOK = false;
 
 async function loadCatalog(){
@@ -564,15 +601,65 @@ async function loadCatalog(){
     const r = await fetch("sons/sons.json", { cache:"no-cache" });
     if (!r.ok) throw 0;
     const d = await r.json();
-    CAT = {
+    REPO = {
       respiration: Array.isArray(d.respiration) ? d.respiration : [],
-      apnee: Array.isArray(d.apnee) ? d.apnee : [],
-      voix: d.voix && typeof d.voix === "object" ? d.voix : {},
-      souffle: d.souffle && typeof d.souffle === "object" ? d.souffle : {}
+      apnee: Array.isArray(d.apnee) ? d.apnee : []
     };
+    CAT.voix = d.voix && typeof d.voix === "object" ? d.voix : {};
+    CAT.souffle = d.souffle && typeof d.souffle === "object" ? d.souffle : {};
     catOK = true;
   } catch(e){ catOK = false; }
+  refreshBanks();
+}
+
+/* ============================================================
+   Musiques importées : IndexedDB, sur l'appareil uniquement.
+   Deux magasins : « pistes » (nom, banque, durée) et « octets »
+   (le fichier), pour ne pas tout charger en mémoire au démarrage.
+   ============================================================ */
+let LOCAL = [];                    // {id, name, bank:"breath"|"hold", size, duration}
+let dbp = null;
+function db(){
+  if (dbp) return dbp;
+  dbp = new Promise((res, rej) => {
+    let rq;
+    try { rq = indexedDB.open("souffle-musique", 1); } catch(e){ return rej(e); }
+    rq.onupgradeneeded = () => {
+      const d = rq.result;
+      if (!d.objectStoreNames.contains("pistes")) d.createObjectStore("pistes", { keyPath:"id" });
+      if (!d.objectStoreNames.contains("octets")) d.createObjectStore("octets", { keyPath:"id" });
+    };
+    rq.onsuccess = () => res(rq.result);
+    rq.onerror = () => rej(rq.error);
+  });
+  return dbp;
+}
+async function idb(stores, mode, fn){
+  const d = await db();
+  return new Promise((res, rej) => {
+    const t = d.transaction(stores, mode);
+    const out = fn(t);
+    t.oncomplete = () => res(out && "result" in out ? out.result : out);
+    t.onerror = () => rej(t.error);
+    t.onabort = () => rej(t.error);
+  });
+}
+const idbMeta = () => idb(["pistes"], "readonly", t => t.objectStore("pistes").getAll());
+const idbBytes = id => idb(["octets"], "readonly", t => t.objectStore("octets").get(id)).then(r => r && r.data || null);
+
+async function loadLocal(){
+  try { LOCAL = (await idbMeta()) || []; }
+  catch(e){ LOCAL = []; setStatus("breath", "Le stockage de cet appareil est inaccessible : les musiques ne pourront pas être conservées.", true); }
+  LOCAL.sort((a, b) => a.name.localeCompare(b.name, "fr"));
+  refreshBanks();
+}
+
+/* banques musicales = dépôt + appareil ; les morceaux locaux ont un chemin « idb:<id> » */
+function refreshBanks(){
+  CAT.respiration = REPO.respiration.concat(LOCAL.filter(t => t.bank === "breath").map(t => "idb:" + t.id));
+  CAT.apnee = REPO.apnee.concat(LOCAL.filter(t => t.bank === "hold").map(t => "idb:" + t.id));
   renderSoundList();
+  renderTracks();
 }
 
 /* ============================================================
@@ -608,9 +695,14 @@ function decodePath(path){
   if (bufCache.has(path)) return bufCache.get(path);
   const p = (async () => {
     try {
-      const r = await fetch(path);
-      if (!r.ok) return null;
-      const data = await r.arrayBuffer();
+      let data;
+      if (path.startsWith("idb:")) data = await idbBytes(path.slice(4));
+      else {
+        const r = await fetch(path);
+        if (!r.ok) return null;
+        data = await r.arrayBuffer();
+      }
+      if (!data) return null;
       return await new Promise(res => {
         // forme à rappels : compatible avec les vieux Safari
         try { ctx.decodeAudioData(data, b => res(b), () => res(null)); }
@@ -1326,13 +1418,111 @@ function renderSoundList(){
   }
   const nv = VOIX.filter(k => CAT.voix[k]).length;
   const ns = Object.keys(TEMPOS).filter(k => CAT.souffle[k]).length;
-  const nr = CAT.respiration.length, na = CAT.apnee.length;
-  const morceaux = n => `${n} morceau${n > 1 ? "x" : ""}`;
   box.innerHTML =
-    `<b>${morceaux(nr)}</b> pour les respirations · <b>${morceaux(na)}</b> pour les apnées<br>` +
     `Voix&nbsp;: <b>${nv}/${VOIX.length}</b> annonces · Souffle&nbsp;: <b>${ns}/3</b> tempos` +
     (CAT.souffle[S.tempo] ? "" : `<br>Pas de souffle enregistré pour le rythme ${T().label.toLowerCase()}&nbsp;: guidage visuel seul.`);
 }
+
+/* --- musiques de l'appareil : liste, import, déplacement, retrait --- */
+function setStatus(kind, msg, warn){
+  const n = el("status-" + kind);
+  if (!n) return;
+  n.hidden = !msg;
+  n.textContent = msg || "";
+  n.className = "note" + (warn ? " warn" : "");
+}
+
+function renderTracks(){
+  ["breath", "hold"].forEach(kind => {
+    const list = el("list-" + kind);
+    if (!list) return;
+    const mine = LOCAL.filter(t => t.bank === kind);
+    list.innerHTML = "";
+    el("empty-" + kind).hidden = mine.length > 0;
+    mine.forEach(t => {
+      const row = document.createElement("div"); row.className = "track";
+      const n = document.createElement("div"); n.className = "track-name"; n.textContent = t.name;
+      const d = document.createElement("div"); d.className = "track-dur"; d.textContent = fmt(t.duration);
+      const mv = document.createElement("button"); mv.type = "button"; mv.textContent = "⇄";
+      mv.title = kind === "breath" ? "Déplacer vers les apnées" : "Déplacer vers les respirations";
+      mv.setAttribute("aria-label", mv.title + " : " + t.name);
+      mv.addEventListener("click", () => moveTrack(t));
+      const x = document.createElement("button"); x.type = "button"; x.textContent = "✕";
+      x.title = "Retirer de l'appareil";
+      x.setAttribute("aria-label", "Retirer " + t.name + " de l'appareil");
+      x.addEventListener("click", () => removeTrack(t));
+      row.append(n, d, mv, x); list.appendChild(row);
+    });
+  });
+}
+
+async function moveTrack(t){
+  t.bank = t.bank === "breath" ? "hold" : "breath";
+  try { await idb(["pistes"], "readwrite", tx => tx.objectStore("pistes").put(t)); }
+  catch(e){ setStatus(t.bank, "Déplacement non enregistré.", true); }
+  refreshBanks();
+}
+
+async function removeTrack(t){
+  if (!confirm(`Retirer « ${t.name} » de cet appareil ?`)) return;
+  try {
+    await idb(["pistes", "octets"], "readwrite", tx => {
+      tx.objectStore("pistes").delete(t.id); tx.objectStore("octets").delete(t.id);
+    });
+    LOCAL = LOCAL.filter(k => k.id !== t.id);
+    bufCache.delete("idb:" + t.id);
+  } catch(e){ setStatus(t.bank, "Impossible de retirer ce morceau.", true); }
+  refreshBanks();
+}
+
+async function addFiles(fileList, kind, input){
+  const files = [...fileList];
+  if (!files.length) return;
+  initAudio();
+  // demande au navigateur de ne jamais purger ce stockage
+  try { if (navigator.storage && navigator.storage.persist) await navigator.storage.persist(); } catch(e){}
+  const bad = []; let added = 0;
+  for (const [i, f] of files.entries()){
+    setStatus(kind, `Import ${i + 1} / ${files.length} : ${f.name}…`, false);
+    let data, buf = null;
+    try { data = await f.arrayBuffer(); } catch(e){ bad.push(f.name + " (illisible)"); continue; }
+    try {
+      buf = await new Promise((res, rej) => ctx.decodeAudioData(data.slice(0), res, rej));
+    } catch(e){ bad.push(f.name + " (format non lu, essaie MP3 ou M4A)"); continue; }
+    const t = {
+      id: (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + Math.random()).replace(/[^\w-]/g, ""),
+      name: f.name.replace(/\.[^.]+$/, "").replace(/_/g, " ").replace(/\s+/g, " ").trim(),
+      bank: kind, size: f.size, duration: buf.duration
+    };
+    buf = null;
+    try {
+      await idb(["pistes", "octets"], "readwrite", tx => {
+        tx.objectStore("pistes").put(t); tx.objectStore("octets").put({ id:t.id, data });
+      });
+      LOCAL.push(t); added++;
+    } catch(e){
+      bad.push(f.name + (e && e.name === "QuotaExceededError" ? " (stockage plein)" : " (non enregistré)"));
+    }
+    refreshBanks();
+  }
+  if (input) input.value = "";
+  LOCAL.sort((a, b) => a.name.localeCompare(b.name, "fr"));
+  refreshBanks();
+  let msg = added ? `${added} morceau${added > 1 ? "x" : ""} ajouté${added > 1 ? "s" : ""}, conservé${added > 1 ? "s" : ""} sur cet appareil.` : "";
+  if (bad.length) msg += (msg ? " " : "") + "Refusé : " + bad.join(", ") + ".";
+  setStatus(kind, msg, bad.length > 0);
+}
+["breath", "hold"].forEach(kind => {
+  const input = el("file-" + kind);
+  input.addEventListener("change", e => addFiles(e.target.files, kind, input));
+});
+
+// iPhone dans Safari : l'app installée a un stockage séparé
+(() => {
+  const standalone = matchMedia("(display-mode: standalone)").matches || navigator.standalone === true;
+  const ios = /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+  el("standalone-note").hidden = standalone || !ios;
+})();
 
 document.querySelectorAll("[data-step]").forEach(st => {
   st.addEventListener("click", ev => {
@@ -1462,6 +1652,7 @@ if ("serviceWorker" in navigator && location.protocol !== "file:"){
     }
   } catch(e){}
   await loadCatalog();
+  await loadLocal();
 })();
 
 })();

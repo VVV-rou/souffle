@@ -94,8 +94,14 @@ Les trois tempos sont ceux des enregistrements de souffle (voir §5).
 - Durée du fondu enchaîné
 - Volume du guidage
 
-**L'ancien encadré de gestion des fichiers audio disparaît entièrement.**
-Les banques sont intégrées au dépôt, non modifiables depuis l'application.
+Voix et souffle sont intégrés au dépôt, non modifiables depuis l'application.
+
+**Musiques : importées sur l'appareil** (révision du 17 oct. 2026). Les morceaux
+choisis sont protégés par le droit d'auteur ; le dépôt et le site étant publics,
+ils ne sont pas versionnés. L'encadré Son a une section par banque (respirations,
+apnées) : import depuis Fichiers, déplacement d'une banque à l'autre, retrait.
+Stockage IndexedDB, une fois par appareil, conservé et disponible hors ligne.
+Sur iPhone, l'app installée a son propre stockage, séparé de Safari.
 
 ### Encadré « Repères »
 - Garder l'écran allumé (Wake Lock)
@@ -117,15 +123,15 @@ déjà horodatées dans l'historique.
 
 ## 5. Audio
 
-### Deux banques, tirage aléatoire
-- `sons/respiration/` : une piste tirée au sort **à chaque cycle**, jamais deux
-  fois la même d'affilée.
-- `sons/apnee/` : prend le relais dès la rétention poumons vides et tient
-  jusqu'à la fin de la reprise.
-
-**Deux platines indépendantes** avec fondu croisé entre les zones (~2,6 s), et
-bouclage interne avec fondu pour que la musique ne s'arrête jamais, quelle que
-soit la durée d'une rétention. Sans piste dans une banque, l'autre continue.
+### Deux banques, tirage aléatoire (révisé le 17 oct. 2026)
+- Zone **respirations** (préparation + respirations) : banque respirations.
+- Zone **apnée** (poumons vides, inspiration, poumons pleins, reprise — jusqu'au
+  retour des respirations) : banque apnées.
+- À chaque changement de zone : un morceau tiré au hasard, **joué depuis le
+  début**, jamais le dernier joué de cette banque ; fondu croisé ~2,6 s.
+- Si un morceau se termine avant la fin de la zone : un autre morceau de la même
+  banque, au hasard, enchaîné avec le fondu réglé dans l'application.
+- Sans morceau dans une banque, l'autre la remplace.
 
 ### Guidage : souffle enregistré
 Plus aucune synthèse. Le souffle de guidage est la voix de Val, enregistrée à

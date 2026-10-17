@@ -1,5 +1,9 @@
 # Banque « apnées »
 
+> **Musiques protégées (droits d'auteur) : ne pas les mettre ici.** Le dépôt et le site sont
+> publics. Importe-les plutôt dans l'app (encadré Son → « Musiques des apnées ») : elles
+> restent sur l'appareil. Ce dossier ne sert qu'à des musiques libres de droits.
+
 Musiques qui prennent le relais dès la rétention poumons vides et tiennent
 jusqu'à la fin de la reprise.
 
