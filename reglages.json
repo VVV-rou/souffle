@@ -1,0 +1,15 @@
+{
+  "cycles": 3,
+  "breaths": 30,
+  "prep": 5,
+  "tempo": "standard",
+  "recMode": "timed",
+  "recSec": 15,
+  "restMode": "free",
+  "restSec": 20,
+  "musicVol": 55,
+  "crossfade": 6,
+  "guideVol": 70,
+  "wake": true,
+  "countdown": true
+}

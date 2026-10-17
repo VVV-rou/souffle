@@ -1,0 +1,1430 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Souffle de Glace</title>
+<meta name="description" content="Respiration Wim Hof guidée — rétentions libres.">
+<meta name="theme-color" content="#070C11">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Souffle">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="192x192" href="icones/icone-192.png">
+<link rel="apple-touch-icon" href="icones/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@400;500;600;700&family=Fragment+Mono&display=swap">
+<style>
+:root{
+  --bg:#070C11;
+  --surface:#101A22;
+  --surface-2:#16242E;
+  --line:#1F303C;
+  --line-2:#2A404F;
+  --ink:#E9F1F5;
+  --ink-2:#93A8B6;
+  --ink-3:#5E7382;
+  --breath:#57C7DC;
+  --hold:#9187E6;
+  --recover:#F0A860;
+  --rest:#86C0A4;
+  --alert:#E8735C;
+  --phase:var(--breath);
+  --font-ui:"Familjen Grotesk","Helvetica Neue",Helvetica,Arial,sans-serif;
+  --font-num:"Fragment Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;background:var(--bg);color:var(--ink);
+  font-family:var(--font-ui);font-size:16px;line-height:1.45;
+  -webkit-font-smoothing:antialiased;overscroll-behavior:none;
+  -webkit-tap-highlight-color:transparent;
+}
+button,input{font:inherit;color:inherit}
+button{cursor:pointer;background:none;border:none}
+:focus-visible{outline:2px solid var(--phase);outline-offset:3px;border-radius:6px}
+h1,h2{margin:0;text-wrap:balance;font-weight:600;letter-spacing:-.015em}
+p{margin:0}
+[hidden]{display:none!important}
+
+/* ---------------- accueil ---------------- */
+#app{height:100%;position:relative}
+#home{
+  height:100%;overflow-y:auto;-webkit-overflow-scrolling:touch;
+  padding:0 16px 128px;max-width:560px;margin:0 auto;
+  padding-top:env(safe-area-inset-top,0px);
+}
+.home-head{padding-block:28px 22px}
+.eyebrow{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-3);font-weight:600}
+.home-head h1{font-size:32px;margin-top:8px}
+.lede{color:var(--ink-2);font-size:14.5px;margin-top:10px;max-width:46ch}
+
+.badge{
+  display:flex;align-items:center;gap:9px;font-size:12.5px;color:var(--ink-2);
+  background:var(--surface);border:1px solid var(--line);
+  border-radius:11px;padding:10px 13px;margin-bottom:14px;line-height:1.45;
+}
+.badge .dot{width:8px;height:8px;border-radius:50%;flex:none;background:var(--ink-3)}
+.badge.ok .dot{background:var(--rest)}
+.badge.warn .dot{background:var(--recover)}
+
+.card{
+  background:var(--surface);border:1px solid var(--line);border-radius:16px;
+  padding:18px 18px 20px;margin-bottom:14px;
+}
+.card>h2{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3);font-weight:700;margin-bottom:16px}
+.row{display:flex;align-items:center;justify-content:space-between;gap:14px}
+.row+.row{margin-top:18px}
+.row-label{font-size:15px;font-weight:500}
+.row-sub{font-size:12.5px;color:var(--ink-3);margin-top:2px;line-height:1.4}
+.val{font-family:var(--font-num);font-size:15px;color:var(--breath);font-variant-numeric:tabular-nums;white-space:nowrap}
+.stack{display:flex;flex-direction:column;align-items:stretch;gap:10px}
+.stack+.stack,.row+.stack,.stack+.row{margin-top:20px}
+
+.stepper{display:flex;align-items:center;gap:2px;background:var(--surface-2);border-radius:11px;padding:3px}
+.stepper button{width:40px;height:36px;border-radius:9px;color:var(--ink-2);font-size:19px;line-height:1;display:grid;place-items:center}
+.stepper button:active{background:var(--line-2);color:var(--ink)}
+.stepper .num{min-width:48px;text-align:center;font-family:var(--font-num);font-size:16px;font-variant-numeric:tabular-nums}
+
+.slider-row{margin-top:18px}
+.slider-head{display:flex;justify-content:space-between;align-items:baseline;gap:12px}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:32px;background:transparent;margin:2px 0 0}
+input[type=range]::-webkit-slider-runnable-track{height:4px;border-radius:2px;background:var(--line-2)}
+input[type=range]::-moz-range-track{height:4px;border-radius:2px;background:var(--line-2)}
+input[type=range]::-webkit-slider-thumb{
+  -webkit-appearance:none;width:22px;height:22px;border-radius:50%;background:var(--ink);
+  margin-top:-9px;border:none;box-shadow:0 0 0 1px var(--bg),0 2px 8px rgba(0,0,0,.5);
+}
+input[type=range]::-moz-range-thumb{width:22px;height:22px;border-radius:50%;background:var(--ink);border:none}
+
+.seg{display:flex;background:var(--surface-2);border-radius:11px;padding:3px;gap:3px}
+.seg button{flex:1;padding:9px 8px;border-radius:9px;font-size:13.5px;font-weight:500;color:var(--ink-2);white-space:nowrap}
+.seg button[aria-pressed="true"]{background:var(--line-2);color:var(--ink)}
+
+.sub-head{
+  font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3);
+  font-weight:700;margin:24px 0 16px;padding-top:20px;border-top:1px solid var(--line);
+}
+
+/* aperçu du rythme */
+.tempo-prev{display:flex;align-items:center;gap:14px;margin-top:12px}
+.mini-wrap{position:relative;width:46px;height:46px;flex:none}
+.mini-ring{position:absolute;inset:0;border-radius:50%;border:1px solid color-mix(in srgb,var(--breath) 26%,transparent)}
+.mini-orb{
+  position:absolute;inset:0;border-radius:50%;
+  background:radial-gradient(circle at 50% 42%,color-mix(in srgb,var(--breath) 62%,transparent),color-mix(in srgb,var(--breath) 14%,transparent) 62%,transparent 72%);
+  transform:scale(.48);will-change:transform;
+}
+.tempo-meta{flex:1;min-width:0}
+.link-btn{font-size:13px;color:var(--ink-3);padding:7px 12px;border-radius:10px;border:1px solid var(--line);white-space:nowrap}
+.link-btn:active{background:var(--surface-2)}
+.link-btn[aria-pressed="true"]{color:var(--breath);border-color:color-mix(in srgb,var(--breath) 45%,transparent)}
+
+.toggle{width:50px;height:30px;border-radius:15px;background:var(--line-2);position:relative;transition:background .18s ease;flex:none}
+.toggle::after{
+  content:"";position:absolute;top:3px;left:3px;width:24px;height:24px;border-radius:50%;
+  background:var(--ink-2);transition:transform .18s ease,background .18s ease;
+}
+.toggle[aria-pressed="true"]{background:color-mix(in srgb,var(--breath) 45%,var(--line-2))}
+.toggle[aria-pressed="true"]::after{transform:translateX(20px);background:#fff}
+
+.sound-list{
+  font-size:12.5px;color:var(--ink-3);background:var(--surface-2);
+  border-radius:10px;padding:11px 13px;line-height:1.55;margin-bottom:4px;
+}
+.sound-list b{color:var(--ink-2);font-weight:600}
+
+/* historique */
+.pb{display:flex;align-items:baseline;gap:10px;margin-bottom:16px;padding-bottom:16px;border-bottom:1px solid var(--line)}
+.pb-num{font-family:var(--font-num);font-size:30px;color:var(--hold);font-variant-numeric:tabular-nums}
+.pb-lab{font-size:12px;color:var(--ink-3);text-transform:uppercase;letter-spacing:.12em;font-weight:600}
+.hist{display:flex;flex-direction:column;gap:10px}
+.hist-item{display:flex;align-items:center;gap:12px}
+.hist-date{font-size:12.5px;color:var(--ink-3);width:64px;flex:none}
+.hist-bars{flex:1;display:flex;gap:3px;align-items:flex-end;height:26px}
+.hist-bar{flex:1;background:var(--line-2);border-radius:2px;min-height:3px}
+.hist-best{font-family:var(--font-num);font-size:12.5px;color:var(--ink-2);flex:none;font-variant-numeric:tabular-nums}
+
+/* calendrier */
+.cal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.cal-title{font-size:15px;font-weight:600;text-transform:capitalize}
+.cal-nav{display:flex;gap:4px}
+.cal-nav button{width:36px;height:34px;border-radius:9px;color:var(--ink-2);font-size:18px;display:grid;place-items:center;background:var(--surface-2)}
+.cal-nav button:active{background:var(--line-2)}
+.cal-nav button:disabled{opacity:.3;cursor:default}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}
+.cal-dow{font-size:10.5px;color:var(--ink-3);text-align:center;letter-spacing:.08em;font-weight:600;padding-bottom:3px}
+.cal-day{
+  aspect-ratio:1;border-radius:9px;display:grid;place-items:center;
+  font-family:var(--font-num);font-size:12.5px;color:var(--ink-3);
+  background:var(--surface-2);position:relative;
+}
+.cal-day.empty{background:transparent}
+.cal-day.done{background:color-mix(in srgb,var(--hold) 72%,var(--surface-2));color:#fff}
+.cal-day.done.multi::after{
+  content:"";position:absolute;bottom:4px;width:4px;height:4px;border-radius:50%;background:#fff;opacity:.85;
+}
+.cal-day.today{box-shadow:inset 0 0 0 1.5px var(--breath);color:var(--ink)}
+.cal-day.future{opacity:.45}
+.cal-stats{display:flex;gap:10px;margin-top:14px}
+.cal-stat{flex:1;font-size:12.5px;color:var(--ink-3)}
+.cal-stat b{display:block;font-family:var(--font-num);font-size:19px;color:var(--ink);font-weight:400;font-variant-numeric:tabular-nums}
+
+/* démarrer */
+.start-bar{
+  position:fixed;left:0;right:0;bottom:0;padding:14px 16px;
+  padding-bottom:calc(14px + env(safe-area-inset-bottom,0px));
+  background:linear-gradient(to top,var(--bg) 62%,rgba(7,12,17,0));
+  display:flex;justify-content:center;
+}
+.btn-primary{
+  width:100%;max-width:520px;padding:17px;border-radius:15px;
+  background:var(--breath);color:#04181D;font-size:16.5px;font-weight:700;letter-spacing:.01em;
+  box-shadow:0 6px 24px rgba(87,199,220,.22);
+}
+.btn-primary:active{transform:scale(.985)}
+
+/* ---------------- séance ---------------- */
+#session{
+  position:fixed;inset:0;z-index:20;background:var(--bg);
+  display:flex;flex-direction:column;touch-action:manipulation;
+  -webkit-user-select:none;user-select:none;
+}
+#session::before{
+  content:"";position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(120% 70% at 50% 42%,color-mix(in srgb,var(--phase) 17%,transparent),transparent 70%);
+}
+.sess-top{
+  position:relative;z-index:2;display:flex;align-items:center;justify-content:space-between;
+  padding:14px 16px;padding-top:calc(14px + env(safe-area-inset-top,0px));
+}
+.sess-cycle{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3);font-weight:600}
+.sess-cycle b{color:var(--ink-2);font-weight:600}
+.icon-btn{width:40px;height:40px;border-radius:10px;color:var(--ink-3);display:grid;place-items:center;font-size:20px;line-height:1}
+.icon-btn:active{background:var(--surface)}
+.sess-stage{
+  position:relative;z-index:2;flex:1;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;padding:0 16px;min-height:0;
+}
+.phase-label{
+  font-size:13px;letter-spacing:.2em;text-transform:uppercase;font-weight:700;
+  color:var(--phase);margin-bottom:26px;text-align:center;transition:color .6s ease;
+}
+.orb-wrap{position:relative;width:min(70vw,300px);aspect-ratio:1;display:grid;place-items:center}
+.orb-ring{position:absolute;inset:0;border-radius:50%;border:1px solid color-mix(in srgb,var(--phase) 26%,transparent)}
+.orb{
+  position:absolute;inset:0;border-radius:50%;
+  background:radial-gradient(circle at 50% 42%,color-mix(in srgb,var(--phase) 58%,transparent),color-mix(in srgb,var(--phase) 14%,transparent) 62%,transparent 72%);
+  box-shadow:0 0 70px color-mix(in srgb,var(--phase) 22%,transparent);
+  transform:scale(.52);
+  transition:transform 1.4s cubic-bezier(.42,0,.58,1),background .6s ease,box-shadow .6s ease;
+  will-change:transform;
+}
+.orb-num{
+  position:relative;z-index:2;text-align:center;font-family:var(--font-num);
+  font-variant-numeric:tabular-nums;font-size:clamp(40px,15vw,60px);line-height:1;letter-spacing:-.02em;
+}
+.orb-num small{
+  display:block;font-size:12px;letter-spacing:.14em;text-transform:uppercase;
+  font-family:var(--font-ui);color:var(--ink-3);margin-top:12px;font-weight:600;
+}
+.breath-track{display:flex;gap:3px;margin-top:30px;width:min(70vw,300px);height:3px}
+.breath-track i{flex:1;background:var(--line);border-radius:2px;transition:background .2s}
+.breath-track i.last{background:color-mix(in srgb,var(--hold) 38%,var(--line))}
+.breath-track i.on{background:var(--phase)}
+.breath-track i.last.on{background:var(--hold)}
+.sess-bottom{
+  position:relative;z-index:2;padding:18px 16px;
+  padding-bottom:calc(20px + env(safe-area-inset-bottom,0px));
+  display:flex;flex-direction:column;align-items:center;gap:14px;min-height:110px;justify-content:flex-end;
+}
+.hint{font-size:14px;color:var(--ink-2);text-align:center;max-width:32ch}
+.hint.pulse{animation:hintpulse 2.6s ease-in-out infinite}
+@keyframes hintpulse{0%,100%{opacity:.45}50%{opacity:1}}
+.loading{
+  position:absolute;z-index:6;left:50%;transform:translateX(-50%);
+  top:calc(62px + env(safe-area-inset-top,0px));
+  background:var(--surface);border:1px solid var(--line);border-radius:999px;
+  padding:7px 15px;color:var(--ink-2);font-size:12.5px;white-space:nowrap;
+}
+
+/* ---------------- bilan ---------------- */
+#summary{
+  position:fixed;inset:0;z-index:30;background:var(--bg);overflow-y:auto;
+  padding:calc(26px + env(safe-area-inset-top,0px)) 16px calc(40px + env(safe-area-inset-bottom,0px));
+}
+.sum-inner{max-width:520px;margin:0 auto}
+.sum-inner h2{font-size:26px;margin-bottom:6px}
+.sum-sub{color:var(--ink-2);font-size:14px;margin-bottom:26px}
+.sum-chart{display:flex;align-items:flex-end;gap:10px;height:170px;margin-bottom:8px}
+.sum-col{flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:8px;height:100%}
+.sum-bar{width:100%;border-radius:6px 6px 3px 3px;background:linear-gradient(to top,color-mix(in srgb,var(--hold) 28%,transparent),var(--hold));min-height:4px}
+.sum-time{font-family:var(--font-num);font-size:13px;font-variant-numeric:tabular-nums}
+.sum-axis{display:flex;gap:10px;margin-bottom:26px}
+.sum-axis span{flex:1;text-align:center;font-size:11px;color:var(--ink-3);letter-spacing:.08em}
+.sum-stats{display:flex;gap:10px;margin-bottom:26px}
+.stat{flex:1;background:var(--surface);border:1px solid var(--line);border-radius:13px;padding:14px}
+.stat-num{font-family:var(--font-num);font-size:21px;font-variant-numeric:tabular-nums}
+.stat-lab{font-size:11px;color:var(--ink-3);text-transform:uppercase;letter-spacing:.1em;font-weight:600;margin-top:5px}
+.sum-actions{display:flex;flex-direction:column;gap:10px}
+.btn-sec{width:100%;padding:16px;border-radius:14px;border:1px solid var(--line-2);font-size:15.5px;font-weight:600}
+.btn-sec:active{background:var(--surface)}
+
+@media (prefers-reduced-motion:reduce){
+  .orb{transition:background .4s ease}
+  .hint.pulse{animation:none;opacity:.8}
+}
+</style>
+</head>
+<body>
+<div id="app">
+  <main id="home">
+    <div class="home-head">
+      <div class="eyebrow">Méthode Wim Hof</div>
+      <h1>Souffle de Glace</h1>
+      <p class="lede">Respirations guidées, rétentions libres. Tu tiens l'apnée aussi longtemps que tu veux&nbsp;: un appui sur l'écran passe à l'inspiration.</p>
+    </div>
+
+    <div class="badge" id="off-badge" hidden>
+      <span class="dot"></span><span id="off-text"></span>
+    </div>
+
+    <section class="card" id="card-pb" hidden>
+      <div class="pb">
+        <span class="pb-num" id="pb-num">—</span>
+        <span class="pb-lab">Meilleure rétention</span>
+      </div>
+      <h2 style="margin-bottom:12px">Dernières séances</h2>
+      <div class="hist" id="hist"></div>
+    </section>
+
+    <section class="card">
+      <h2>Régularité</h2>
+      <div class="cal-head">
+        <span class="cal-title" id="cal-title"></span>
+        <div class="cal-nav">
+          <button type="button" id="cal-prev" aria-label="Mois précédent">‹</button>
+          <button type="button" id="cal-next" aria-label="Mois suivant">›</button>
+        </div>
+      </div>
+      <div class="cal-grid" id="cal-grid"></div>
+      <div class="cal-stats">
+        <div class="cal-stat"><b id="cal-month">0</b>jours ce mois-ci</div>
+        <div class="cal-stat"><b id="cal-streak">0</b>jours d'affilée</div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Séance</h2>
+      <div class="row">
+        <div>
+          <div class="row-label">Cycles</div>
+          <div class="row-sub">Nombre de tours complets</div>
+        </div>
+        <div class="stepper" data-step="cycles">
+          <button type="button" data-d="-1" aria-label="Un cycle de moins">−</button>
+          <span class="num" id="v-cycles">3</span>
+          <button type="button" data-d="1" aria-label="Un cycle de plus">+</button>
+        </div>
+      </div>
+      <div class="row">
+        <div>
+          <div class="row-label">Respirations</div>
+          <div class="row-sub">Par cycle, avant la rétention</div>
+        </div>
+        <div class="stepper" data-step="breaths">
+          <button type="button" data-d="-5" aria-label="Cinq respirations de moins">−</button>
+          <span class="num" id="v-breaths">30</span>
+          <button type="button" data-d="5" aria-label="Cinq respirations de plus">+</button>
+        </div>
+      </div>
+      <div class="slider-row">
+        <div class="slider-head">
+          <span class="row-label">Préparation</span>
+          <span class="val" id="v-prep">5 s</span>
+        </div>
+        <input type="range" id="s-prep" min="0" max="20" step="1" value="5" aria-label="Durée de la préparation">
+      </div>
+      <div class="stack" style="margin-top:14px">
+        <div class="row-label">Rythme</div>
+        <div class="seg" data-seg="tempo">
+          <button type="button" data-v="lent" aria-pressed="false">Lent</button>
+          <button type="button" data-v="standard" aria-pressed="true">Standard</button>
+          <button type="button" data-v="rapide" aria-pressed="false">Rapide</button>
+        </div>
+        <div class="tempo-prev">
+          <div class="mini-wrap"><div class="mini-ring"></div><div class="mini-orb" id="mini-orb"></div></div>
+          <div class="tempo-meta">
+            <div class="row-label" id="tempo-name" style="font-size:14px">Standard</div>
+            <div class="row-sub" id="tempo-detail"></div>
+          </div>
+          <button type="button" class="link-btn" id="tempo-listen" aria-pressed="false">▶ Écouter</button>
+        </div>
+      </div>
+      <div class="row-sub" style="margin-top:14px" id="cycle-est"></div>
+    </section>
+
+    <section class="card">
+      <h2>Rétentions</h2>
+      <div class="stack">
+        <div>
+          <div class="row-label">Poumons vides</div>
+          <div class="row-sub">Toujours libre&nbsp;: un appui sur l'écran quand tu veux reprendre.</div>
+        </div>
+      </div>
+      <div class="stack">
+        <div>
+          <div class="row-label">Récupération</div>
+          <div class="row-sub">Grande inspiration puis rétention poumons pleins</div>
+        </div>
+        <div class="seg" data-seg="recMode">
+          <button type="button" data-v="timed" aria-pressed="true">Minutée</button>
+          <button type="button" data-v="free" aria-pressed="false">Libre — appui écran</button>
+        </div>
+      </div>
+      <div class="slider-row" id="rec-timed-row">
+        <div class="slider-head">
+          <span class="row-label">Durée</span>
+          <span class="val" id="v-rec">15 s</span>
+        </div>
+        <input type="range" id="s-rec" min="5" max="60" step="1" value="15" aria-label="Durée de la rétention de récupération">
+      </div>
+      <div class="sub-head">Reprise entre les cycles</div>
+      <div class="stack" style="margin-top:0">
+        <div>
+          <div class="row-label">Respirations libres</div>
+          <div class="row-sub">Le temps de souffler avant de relancer le rythme</div>
+        </div>
+        <div class="seg" data-seg="restMode">
+          <button type="button" data-v="free" aria-pressed="true">Libre</button>
+          <button type="button" data-v="timed" aria-pressed="false">Minutée</button>
+          <button type="button" data-v="off" aria-pressed="false">Aucune</button>
+        </div>
+      </div>
+      <div class="slider-row" id="rest-timed-row" hidden>
+        <div class="slider-head">
+          <span class="row-label">Durée</span>
+          <span class="val" id="v-rest">20 s</span>
+        </div>
+        <input type="range" id="s-rest" min="5" max="120" step="5" value="20" aria-label="Durée de la reprise entre les cycles">
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Son</h2>
+      <div class="sound-list" id="sound-list">Lecture de la liste des sons…</div>
+      <div class="slider-row">
+        <div class="slider-head">
+          <span class="row-label">Volume d'ambiance</span>
+          <span class="val" id="v-mvol">55 %</span>
+        </div>
+        <input type="range" id="s-mvol" min="0" max="100" step="1" value="55" aria-label="Volume de l'ambiance">
+      </div>
+      <div class="slider-row">
+        <div class="slider-head">
+          <span class="row-label">Fondu enchaîné</span>
+          <span class="val" id="v-xf">6 s</span>
+        </div>
+        <input type="range" id="s-xf" min="0" max="15" step="1" value="6" aria-label="Durée du fondu enchaîné">
+      </div>
+      <div class="slider-row">
+        <div class="slider-head">
+          <span class="row-label">Volume du guidage</span>
+          <span class="val" id="v-gvol">70 %</span>
+        </div>
+        <input type="range" id="s-gvol" min="0" max="100" step="1" value="70" aria-label="Volume du guidage">
+        <div class="row-sub">Souffle et annonces de phase</div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Repères</h2>
+      <div class="row">
+        <div>
+          <div class="row-label">Garder l'écran allumé</div>
+          <div class="row-sub">Indispensable sur iPhone&nbsp;: écran verrouillé, le son se coupe</div>
+        </div>
+        <button type="button" class="toggle" id="t-wake" aria-pressed="true" aria-label="Garder l'écran allumé"></button>
+      </div>
+      <div class="row">
+        <div>
+          <div class="row-label">Décompte des 3 dernières</div>
+          <div class="row-sub">La voix compte trois, deux, une, et l'écran vire vers la couleur de rétention</div>
+        </div>
+        <button type="button" class="toggle" id="t-count" aria-pressed="true" aria-label="Décompte des trois dernières respirations"></button>
+      </div>
+    </section>
+
+    <div class="start-bar">
+      <button type="button" class="btn-primary" id="start">Démarrer la séance</button>
+    </div>
+  </main>
+
+  <section id="session" hidden>
+    <div class="sess-top">
+      <div class="sess-cycle">Cycle <b id="sess-cyc">1</b> / <b id="sess-cyc-tot">3</b></div>
+      <button type="button" class="icon-btn" id="quit" aria-label="Arrêter la séance">✕</button>
+    </div>
+    <div class="sess-stage">
+      <div class="phase-label" id="phase-label">Préparation</div>
+      <div class="orb-wrap">
+        <div class="orb-ring"></div>
+        <div class="orb" id="orb"></div>
+        <div class="orb-num" id="orb-num">5<small id="orb-sub">secondes</small></div>
+      </div>
+      <div class="breath-track" id="breath-track"></div>
+    </div>
+    <div class="sess-bottom">
+      <p class="hint" id="hint">Installe-toi. Assis ou allongé, le dos libre.</p>
+      <button type="button" class="link-btn" id="skip" hidden>Passer à la rétention</button>
+    </div>
+    <div class="loading" id="loading" hidden>Préparation du son…</div>
+  </section>
+
+  <section id="summary" hidden>
+    <div class="sum-inner">
+      <h2>Séance terminée</h2>
+      <p class="sum-sub" id="sum-sub"></p>
+      <div class="sum-chart" id="sum-chart"></div>
+      <div class="sum-axis" id="sum-axis"></div>
+      <div class="sum-stats" id="sum-stats"></div>
+      <div class="sum-actions">
+        <button type="button" class="btn-primary" id="again">Nouvelle séance</button>
+        <button type="button" class="btn-sec" id="back-home">Revenir aux réglages</button>
+      </div>
+    </div>
+  </section>
+</div>
+
+<script>
+(() => {
+"use strict";
+
+/* ============================================================
+   Tempos — valeurs mesurées sur sons/souffle/*.
+   PROVISOIRES tant que les enregistrements n'existent pas :
+   remplace period (durée totale du fichier, en s) et inhale
+   (début du fichier → début de l'expiration) par les mesures.
+   Aucun étirement n'est appliqué au son.
+   ============================================================ */
+const TEMPOS = {
+  lent:     { label:"Lent",     period:4.0, inhale:2.2  },
+  standard: { label:"Standard", period:3.0, inhale:1.65 },
+  rapide:   { label:"Rapide",   period:2.2, inhale:1.2  }
+};
+const VOIX = ["trois","deux","une","retention","inspire","relache","repart","termine"];
+const RECOVERY_IN = 2.3;     // grande inspiration avant la rétention poumons pleins
+const LOOKAHEAD = 1.2;       // fenêtre de programmation des sons, en s
+const ZONE_FADE = 2.6;       // fondu croisé respirations <-> apnées
+
+/* ============================================================
+   Réglages : défauts < reglages.json (dépôt) < localStorage (appareil)
+   ============================================================ */
+const DEFAULTS = {
+  cycles:3, breaths:30, prep:5, tempo:"standard",
+  recMode:"timed", recSec:15, restMode:"free", restSec:20,
+  musicVol:55, crossfade:6, guideVol:70, wake:true, countdown:true
+};
+const LS = {
+  get(k, fb){ try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : fb; } catch(e){ return fb; } },
+  set(k, v){ try { localStorage.setItem(k, JSON.stringify(v)); } catch(e){} }
+};
+let S = { ...DEFAULTS, ...LS.get("souffle.reglages", {}) };
+let history = LS.get("souffle.historique", []);
+let days = LS.get("souffle.jours", {});   // "AAAA-MM-JJ" -> nombre de séances
+if (!Array.isArray(history)) history = [];
+if (!days || typeof days !== "object") days = {};
+
+function sanitize(){
+  if (!TEMPOS[S.tempo]) S.tempo = "standard";
+  S.cycles = clamp(+S.cycles || 3, 1, 12);
+  S.breaths = clamp(+S.breaths || 30, 10, 80);
+}
+const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+const T = () => TEMPOS[S.tempo];
+const save = () => LS.set("souffle.reglages", S);
+sanitize();
+
+/* ============================================================
+   Catalogue des sons (sons/sons.json, généré au déploiement)
+   ============================================================ */
+let CAT = { respiration:[], apnee:[], voix:{}, souffle:{} };
+let catOK = false;
+
+async function loadCatalog(){
+  try {
+    const r = await fetch("sons/sons.json", { cache:"no-cache" });
+    if (!r.ok) throw 0;
+    const d = await r.json();
+    CAT = {
+      respiration: Array.isArray(d.respiration) ? d.respiration : [],
+      apnee: Array.isArray(d.apnee) ? d.apnee : [],
+      voix: d.voix && typeof d.voix === "object" ? d.voix : {},
+      souffle: d.souffle && typeof d.souffle === "object" ? d.souffle : {}
+    };
+    catOK = true;
+  } catch(e){ catOK = false; }
+  renderSoundList();
+}
+
+/* ============================================================
+   Moteur audio — une seule horloge : AudioContext.currentTime
+   ============================================================ */
+let ctx = null, masterGain, musicGain, duckGain, guideGain;
+const bufCache = new Map();       // chemin -> Promise<AudioBuffer|null>
+let scheduled = [];               // sons programmés : {src, at}
+
+function initAudio(){
+  if (ctx) return ctx;
+  // iOS 17+ : la lecture ignore le bouton silencieux
+  try { if (navigator.audioSession) navigator.audioSession.type = "playback"; } catch(e){}
+  const AC = window.AudioContext || window.webkitAudioContext;
+  ctx = new AC();
+  masterGain = ctx.createGain();
+  musicGain = ctx.createGain(); musicGain.gain.value = .0001;
+  duckGain = ctx.createGain(); duckGain.gain.value = 1;
+  guideGain = ctx.createGain(); guideGain.gain.value = S.guideVol / 100;
+  musicGain.connect(duckGain); duckGain.connect(masterGain);
+  guideGain.connect(masterGain);
+  masterGain.connect(ctx.destination);
+  return ctx;
+}
+const now = () => ctx ? ctx.currentTime : performance.now() / 1000;
+async function resumeAudio(){
+  initAudio();
+  if (ctx.state !== "running"){ try { await ctx.resume(); } catch(e){} }
+}
+
+function decodePath(path){
+  if (!path) return Promise.resolve(null);
+  if (bufCache.has(path)) return bufCache.get(path);
+  const p = (async () => {
+    try {
+      const r = await fetch(path);
+      if (!r.ok) return null;
+      const data = await r.arrayBuffer();
+      return await new Promise(res => {
+        // forme à rappels : compatible avec les vieux Safari
+        try { ctx.decodeAudioData(data, b => res(b), () => res(null)); }
+        catch(e){ res(null); }
+      });
+    } catch(e){ return null; }
+  })();
+  bufCache.set(path, p);
+  return p;
+}
+
+const voixBufs = {};
+let souffleBuf = null;
+
+/* sons courts : voix + souffle du tempo choisi, prêts avant le premier souffle */
+async function loadGuides(){
+  initAudio();
+  const jobs = VOIX.map(async k => { voixBufs[k] = await decodePath(CAT.voix[k]); });
+  jobs.push((async () => { souffleBuf = await decodePath(CAT.souffle[S.tempo]); })());
+  await Promise.all(jobs);
+}
+
+function playBuf(buf, at, dest, vol = 1){
+  if (!ctx || !buf) return null;
+  const src = ctx.createBufferSource();
+  src.buffer = buf;
+  let out = src;
+  if (vol !== 1){ const g = ctx.createGain(); g.gain.value = vol; src.connect(g); out = g; }
+  out.connect(dest);
+  const t = Math.max(at, ctx.currentTime);
+  src.start(t);
+  const rec = { src, at:t };
+  scheduled.push(rec);
+  src.onended = () => { scheduled = scheduled.filter(x => x !== rec); };
+  return rec;
+}
+/* annule ce qui n'a pas encore commencé (ex. « passer à la rétention ») */
+function cancelFuture(){
+  const t = now() + .01;
+  scheduled.filter(x => x.at > t).forEach(x => { try { x.src.stop(); } catch(e){} });
+  scheduled = scheduled.filter(x => x.at <= t);
+}
+function stopAllGuides(){
+  scheduled.forEach(x => { try { x.src.stop(); } catch(e){} });
+  scheduled = [];
+}
+
+/* la musique s'efface le temps d'une annonce, puis revient */
+function duck(at, sec){
+  if (!duckGain) return;
+  try {
+    duckGain.gain.setTargetAtTime(.35, at, .06);
+    duckGain.gain.setTargetAtTime(1, at + sec + .1, .45);
+  } catch(e){}
+}
+function voice(key, at){
+  const b = voixBufs[key];
+  if (!b) return false;
+  at = Math.max(at == null ? now() + .03 : at, now());
+  duck(at, b.duration);
+  playBuf(b, at, guideGain);
+  return true;
+}
+
+/* --- deux platines : respirations et apnées, fondu croisé entre les deux --- */
+const player = {
+  decks:{}, last:{}, zone:null, timer:null, running:false,
+
+  pool(kind){ return kind === "breath" ? CAT.respiration : CAT.apnee; },
+
+  /* tirage au sort, jamais deux fois la même d'affilée */
+  pick(kind){
+    const p = this.pool(kind);
+    if (!p.length) return null;
+    if (p.length === 1) return p[0];
+    const avail = p.filter(x => x !== this.last[kind]);
+    const c = avail[Math.floor(Math.random() * avail.length)];
+    this.last[kind] = c;
+    return c;
+  },
+
+  deck(kind){
+    if (!this.decks[kind]){
+      const g = ctx.createGain(); g.gain.value = .0001; g.connect(musicGain);
+      this.decks[kind] = { g, buf:null, path:null, live:[], nextStart:0 };
+    }
+    return this.decks[kind];
+  },
+
+  clearDeck(d){
+    d.live.forEach(s => { try { s.stop(); } catch(e){} });
+    d.live = [];
+  },
+
+  async load(kind){
+    const d = this.deck(kind);
+    const path = this.pick(kind);
+    if (!path){ d.buf = null; this.clearDeck(d); return; }
+    const buf = await decodePath(path);
+    if (!buf || !this.running) return;
+    const prev = d.path;
+    this.clearDeck(d);
+    d.buf = buf; d.path = path;
+    d.nextStart = now() + .08;
+    this.schedule(d);
+    // libère la mémoire du morceau précédent s'il n'est plus sur aucune platine
+    if (prev && prev !== path && !Object.values(this.decks).some(x => x.path === prev))
+      bufCache.delete(prev);
+  },
+
+  /* boucle sans fin : la piste est replanifiée avant sa propre fin, avec fondu */
+  schedule(d){
+    if (!d.buf) return;
+    const t0 = Math.max(d.nextStart, now() + .05);
+    const dur = d.buf.duration;
+    const xf = Math.min(S.crossfade, dur / 3);
+    const src = ctx.createBufferSource(); src.buffer = d.buf;
+    const g = ctx.createGain();
+    src.connect(g); g.connect(d.g);
+    if (xf > .05){
+      g.gain.setValueAtTime(.0001, t0);
+      g.gain.exponentialRampToValueAtTime(1, t0 + xf);
+      g.gain.setValueAtTime(1, t0 + dur - xf);
+      g.gain.exponentialRampToValueAtTime(.0001, t0 + dur);
+    } else g.gain.setValueAtTime(1, t0);
+    src.start(t0);
+    try { src.stop(t0 + dur + .2); } catch(e){}
+    d.live.push(src);
+    src.onended = () => { d.live = d.live.filter(s => s !== src); };
+    d.nextStart = t0 + dur - xf;
+  },
+
+  /* bascule de zone ; sans piste dans une banque, l'autre continue */
+  setZone(z, sec = ZONE_FADE){
+    if (!this.running) return;
+    const other = z === "breath" ? "hold" : "breath";
+    const target = this.pool(z).length ? z : (this.pool(other).length ? other : null);
+    if (!target || target === this.zone) return;
+    this.zone = target;
+    ["breath", "hold"].forEach(k => {
+      const d = this.decks[k]; if (!d) return;
+      const v = k === target ? 1 : .0001, t = now();
+      try {
+        d.g.gain.cancelScheduledValues(t);
+        d.g.gain.setValueAtTime(Math.max(.0001, d.g.gain.value), t);
+        d.g.gain.exponentialRampToValueAtTime(v, t + sec);
+      } catch(e){}
+    });
+  },
+
+  async start(){
+    this.stop();
+    if (!CAT.respiration.length && !CAT.apnee.length) return;
+    this.decks = {}; this.zone = null; this.running = true;
+    this.deck("breath"); this.deck("hold");
+    await this.load("breath");
+    if (!this.running) return;
+    this.setZone(run && run.phase === "hold" ? "hold" : "breath", .8);
+    const t = now();
+    musicGain.gain.cancelScheduledValues(t);
+    musicGain.gain.setValueAtTime(.0001, t);
+    musicGain.gain.exponentialRampToValueAtTime(Math.max(.0002, S.musicVol / 100), t + 3);
+    this.timer = setInterval(() => this.tick(), 1000);
+    this.load("hold");   // prête en tâche de fond pour la première apnée
+  },
+
+  tick(){
+    if (!this.running) return;
+    ["breath", "hold"].forEach(k => {
+      const d = this.decks[k];
+      if (d && d.buf && d.nextStart - now() < 8) this.schedule(d);
+    });
+  },
+
+  fadeOut(sec = 3){
+    if (!ctx) return;
+    const t = now();
+    try {
+      musicGain.gain.cancelScheduledValues(t);
+      musicGain.gain.setValueAtTime(Math.max(.0001, musicGain.gain.value), t);
+      musicGain.gain.exponentialRampToValueAtTime(.0001, t + sec);
+    } catch(e){}
+    const token = this.token = {};
+    setTimeout(() => { if (this.token === token) this.stop(); }, sec * 1000 + 150);
+  },
+
+  stop(){
+    this.running = false;
+    this.token = null;
+    if (this.timer){ clearInterval(this.timer); this.timer = null; }
+    Object.values(this.decks).forEach(d => this.clearDeck(d));
+    this.decks = {};
+    // ne garde en mémoire que les sons courts
+    const keep = new Set([...Object.values(CAT.voix), ...Object.values(CAT.souffle)]);
+    [...bufCache.keys()].forEach(k => { if (!keep.has(k)) bufCache.delete(k); });
+  },
+
+  setVol(v){
+    if (!ctx || !this.running) return;
+    try {
+      musicGain.gain.cancelScheduledValues(now());
+      musicGain.gain.setTargetAtTime(Math.max(.0001, v), now(), .15);
+    } catch(e){}
+  }
+};
+
+/* ============================================================
+   Machine à états de la séance
+   ============================================================ */
+const el = id => document.getElementById(id);
+let run = null, raf = null, wakeLock = null;
+
+async function requestWake(){
+  if (!S.wake || !("wakeLock" in navigator)) return;
+  try {
+    wakeLock = await navigator.wakeLock.request("screen");
+    wakeLock.addEventListener("release", () => { wakeLock = null; });
+  } catch(e){}
+}
+function releaseWake(){ try { wakeLock && wakeLock.release(); } catch(e){} wakeLock = null; }
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "visible"){
+    if (run && S.wake && !wakeLock) requestWake();
+    if (run && ctx && ctx.state !== "running") ctx.resume().catch(() => {});
+  }
+});
+
+function fmt(sec){
+  sec = Math.max(0, sec);
+  const m = Math.floor(sec / 60), s = Math.floor(sec % 60);
+  return m > 0 ? `${m}:${String(s).padStart(2, "0")}` : `${s}`;
+}
+function fmtLong(sec){
+  const m = Math.floor(sec / 60), s = Math.floor(sec % 60);
+  return m > 0 ? `${m}:${String(s).padStart(2, "0")}` : `${s} s`;
+}
+const dec = n => n.toFixed(1).replace(".", ",");
+const setPhaseColor = c => el("session").style.setProperty("--phase", c);
+
+function orbScale(v){
+  const orb = el("orb");
+  orb.style.transitionDuration = "0ms";
+  requestAnimationFrame(() => { orb.style.transform = `scale(${v})`; });
+}
+function orbBreath(v, ms){
+  const orb = el("orb");
+  orb.style.transitionDuration = ms + "ms";
+  orb.style.transform = `scale(${v})`;
+}
+
+function buildBreathTrack(n){
+  const t = el("breath-track");
+  t.innerHTML = "";
+  const max = Math.min(n, 60);
+  // les trois dernières sont teintées dès le début du cycle : la fin se voit venir
+  const from = S.countdown ? Math.round((n - 3) / n * max) : max;
+  for (let i = 0; i < max; i++){
+    const s = document.createElement("i");
+    if (i >= from) s.className = "last";
+    t.appendChild(s);
+  }
+}
+
+async function startSession(){
+  stopTempoPreview();
+  await resumeAudio();
+  guideGain.gain.value = S.guideVol / 100;
+
+  el("home").hidden = true;
+  el("summary").hidden = true;
+  el("session").hidden = false;
+  el("sess-cyc").textContent = 1;
+  el("sess-cyc-tot").textContent = S.cycles;
+  buildBreathTrack(S.breaths);
+  setPhaseColor("var(--breath)");
+  el("phase-label").textContent = "Préparation";
+  el("orb-num").firstChild.nodeValue = String(S.prep);
+  el("orb-sub").textContent = "secondes";
+  orbScale(.52);
+  requestWake();
+
+  // voix et souffle d'abord (petits fichiers, déjà en cache) ; pas plus de 4 s d'attente
+  el("loading").hidden = false;
+  await Promise.race([loadGuides(), new Promise(r => setTimeout(r, 4000))]);
+  el("loading").hidden = true;
+
+  run = { cycle:0, phase:"prep", breath:-1, sched:0, t0:now(), dur:S.prep,
+          holds:[], holdStart:0, holdVoiced:false, ended:false };
+  player.start();
+  if (S.prep === 0) enterBreathing(); else enterPrep();
+  if (!raf) loop();
+}
+
+function enterPrep(){
+  run.phase = "prep"; run.t0 = now(); run.dur = S.prep;
+  setPhaseColor("var(--breath)");
+  el("phase-label").textContent = "Préparation";
+  el("hint").textContent = "Installe-toi. Assis ou allongé, le dos libre.";
+  el("hint").classList.remove("pulse");
+  el("skip").hidden = true;
+}
+
+function enterBreathing(){
+  const first = run.phase === "prep";
+  run.phase = "breathe"; run.breath = -1; run.sched = 0; run.holdVoiced = false;
+  // petit décalage pour que la première respiration soit programmée à temps
+  run.t0 = now() + (first ? .15 : .6);
+  setPhaseColor("var(--breath)");
+  const label = el("phase-label");
+  label.dataset.p = ""; label.textContent = "Inspire";
+  [...el("breath-track").children].forEach(i => i.classList.remove("on"));
+  el("orb-num").firstChild.nodeValue = "1";
+  el("orb-sub").textContent = "/ " + S.breaths;
+  el("sess-cyc").textContent = run.cycle + 1;
+  el("hint").textContent = "Inspire à fond par le ventre, laisse l'expiration se faire seule.";
+  el("hint").classList.remove("pulse");
+  el("skip").hidden = false;
+  if (run.cycle > 0){
+    voice("repart");
+    player.load("breath");              // nouvelle piste à chaque cycle
+    const c = run.cycle;                // nouvelle apnée, une fois le fondu terminé
+    setTimeout(() => { if (run && run.cycle === c && player.running) player.load("hold"); }, (ZONE_FADE + 1) * 1000);
+  }
+  player.setZone("breath");
+}
+
+/* programme souffle, décompte et annonce de rétention sur l'horloge audio */
+function scheduleBreathing(t){
+  const tp = T(), unit = tp.period, horizon = t + LOOKAHEAD;
+  while (run.sched < S.breaths){
+    const at = run.t0 + run.sched * unit;
+    if (at > horizon) break;
+    if (at >= t - .05){
+      if (souffleBuf) playBuf(souffleBuf, at, guideGain);
+      const remain = S.breaths - run.sched;
+      if (S.countdown && remain <= 3) voice(["", "une", "deux", "trois"][remain], at);
+    }
+    run.sched++;
+  }
+  const end = run.t0 + S.breaths * unit;
+  if (!run.holdVoiced && end <= horizon){
+    voice("retention", end);
+    run.holdVoiced = true;
+  }
+}
+
+function enterHold(natural){
+  if (!natural) cancelFuture();
+  run.phase = "hold";
+  run.holdStart = natural ? Math.min(now(), run.t0 + S.breaths * T().period) : now();
+  setPhaseColor("var(--hold)");
+  el("phase-label").textContent = "Rétention";
+  el("orb-sub").textContent = "poumons vides";
+  el("hint").textContent = "Appuie sur l'écran quand tu veux reprendre.";
+  el("hint").classList.add("pulse");
+  el("skip").hidden = true;
+  orbScale(.42);
+  if (!run.holdVoiced){ voice("retention"); run.holdVoiced = true; }
+  player.setZone("hold");
+}
+
+function enterRecovery(){
+  run.holds.push(now() - run.holdStart);
+  run.phase = "recIn"; run.t0 = now(); run.dur = RECOVERY_IN;
+  setPhaseColor("var(--recover)");
+  el("phase-label").textContent = "Inspire à fond";
+  el("orb-sub").textContent = "et retiens";
+  el("hint").textContent = "Une grande inspiration, puis bloque poumons pleins.";
+  el("hint").classList.remove("pulse");
+  orbBreath(1, RECOVERY_IN * 1000);
+  voice("inspire");
+}
+
+function enterRecHold(){
+  run.phase = "recHold"; run.t0 = now(); run.dur = S.recSec;
+  el("phase-label").textContent = "Retiens";
+  el("orb-sub").textContent = "poumons pleins";
+  el("hint").textContent = S.recMode === "free" ? "Appuie sur l'écran pour enchaîner." : "Garde l'air. Relâche au signal.";
+  el("hint").classList.toggle("pulse", S.recMode === "free");
+  orbBreath(.92, 700);
+}
+
+/* fin de la récupération : reprise, cycle suivant, ou fin (pas de reprise après le dernier) */
+function afterRecovery(){
+  if (run.cycle + 1 >= S.cycles) return endSession(false);
+  if (S.restMode === "off") return nextCycle();
+  enterRest();
+}
+
+function enterRest(){
+  run.phase = "rest"; run.t0 = now(); run.dur = S.restSec;
+  setPhaseColor("var(--rest)");
+  el("phase-label").textContent = "Reprise";
+  el("orb-sub").textContent = "respire normalement";
+  el("hint").textContent = S.restMode === "free"
+    ? "Quelques respirations normales. Appuie quand tu es prêt à repartir."
+    : "Quelques respirations normales avant de relancer le rythme.";
+  el("hint").classList.toggle("pulse", S.restMode === "free");
+  voice("relache");
+}
+
+function nextCycle(){
+  run.cycle++;
+  if (run.cycle >= S.cycles) return endSession(false);
+  enterBreathing();
+}
+
+function endSession(aborted){
+  if (!run || run.ended) return;
+  run.ended = true;
+  if (raf){ cancelAnimationFrame(raf); raf = null; }
+  releaseWake();
+  if (aborted) stopAllGuides(); else voice("termine");
+  player.fadeOut(aborted ? 1.2 : 4);
+
+  const holds = run.holds.slice();
+  run = null;
+  el("session").hidden = true;
+
+  if (aborted || !holds.length){ el("home").hidden = false; return; }
+
+  const rec = { d:Date.now(), h:holds.map(x => Math.round(x)), b:S.breaths, t:S.tempo };
+  const prevBest = bestOf(history);
+  history.unshift(rec);
+  history = history.slice(0, 30);
+  LS.set("souffle.historique", history);
+  const k = dayKey(new Date(rec.d));
+  days[k] = (days[k] || 0) + 1;
+  LS.set("souffle.jours", days);
+  renderHistory(); renderCalendar();
+  showSummary(rec, prevBest);
+}
+
+/* --- boucle d'affichage, calée sur l'horloge audio --- */
+function loop(){
+  raf = requestAnimationFrame(loop);
+  if (!run) return;
+  const t = now();
+
+  if (run.phase === "prep"){
+    const left = run.dur - (t - run.t0);
+    el("orb-num").firstChild.nodeValue = String(Math.max(0, Math.ceil(left)));
+    if (left <= 0) enterBreathing();
+    return;
+  }
+
+  if (run.phase === "breathe"){
+    scheduleBreathing(t);
+    const tp = T(), e = t - run.t0;
+    if (e < 0) return;
+    const i = Math.floor(e / tp.period);
+    if (i >= S.breaths){ enterHold(true); return; }
+    const remain = S.breaths - i;
+
+    if (i !== run.breath){
+      run.breath = i;
+      const track = el("breath-track").children, ratio = track.length / S.breaths;
+      for (let k = 0; k < track.length; k++) track[k].classList.toggle("on", k < Math.round((i + 1) * ratio));
+      if (S.countdown && remain <= 3){
+        const mix = { 3:25, 2:55, 1:85 }[remain];
+        setPhaseColor(`color-mix(in srgb, var(--hold) ${mix}%, var(--breath))`);
+      }
+    }
+
+    const p = e - i * tp.period, label = el("phase-label");
+    if (p < tp.inhale){
+      if (label.dataset.p !== "in" + i){
+        label.dataset.p = "in" + i; label.textContent = "Inspire";
+        orbBreath(1, (tp.inhale - p) * 1000);
+      }
+    } else if (label.dataset.p !== "out" + i){
+      label.dataset.p = "out" + i; label.textContent = "Expire";
+      orbBreath(.52, (tp.period - p) * 1000);
+    }
+
+    if (S.countdown && remain <= 3){
+      el("orb-num").firstChild.nodeValue = String(remain);
+      el("orb-sub").textContent = "avant rétention";
+    } else {
+      el("orb-num").firstChild.nodeValue = String(i + 1);
+      el("orb-sub").textContent = "/ " + S.breaths;
+    }
+    return;
+  }
+
+  if (run.phase === "hold"){
+    const e = t - run.holdStart;
+    el("orb-num").firstChild.nodeValue = fmt(e);
+    const orb = el("orb");
+    orb.style.transitionDuration = "0ms";
+    orb.style.transform = `scale(${.42 + .045 * Math.sin(e * .55)})`;
+    return;
+  }
+
+  if (run.phase === "recIn"){
+    const left = run.dur - (t - run.t0);
+    el("orb-num").firstChild.nodeValue = String(Math.max(0, Math.ceil(left)));
+    if (left <= 0) enterRecHold();
+    return;
+  }
+
+  if (run.phase === "recHold"){
+    const e = t - run.t0;
+    if (S.recMode === "timed"){
+      const left = run.dur - e;
+      el("orb-num").firstChild.nodeValue = String(Math.max(0, Math.ceil(left)));
+      if (left <= 0) afterRecovery();
+    } else el("orb-num").firstChild.nodeValue = fmt(e);
+    return;
+  }
+
+  if (run.phase === "rest"){
+    const e = t - run.t0;
+    const orb = el("orb");
+    orb.style.transitionDuration = "0ms";
+    orb.style.transform = `scale(${.58 + .13 * Math.sin(e * Math.PI * 2 / 5)})`;
+    if (S.restMode === "timed"){
+      const left = run.dur - e;
+      el("orb-num").firstChild.nodeValue = String(Math.max(0, Math.ceil(left)));
+      if (left <= 0) nextCycle();
+    } else el("orb-num").firstChild.nodeValue = fmt(e);
+  }
+}
+
+/* toute la surface est une zone d'appui pendant les phases libres */
+el("session").addEventListener("click", ev => {
+  if (ev.target.closest("button") || !run) return;
+  if (run.phase === "hold") enterRecovery();
+  else if (run.phase === "recHold" && S.recMode === "free") afterRecovery();
+  else if (run.phase === "rest" && S.restMode === "free") nextCycle();
+});
+el("quit").addEventListener("click", () => endSession(true));
+el("skip").addEventListener("click", () => { if (run && run.phase === "breathe") enterHold(false); });
+
+/* ============================================================
+   Bilan
+   ============================================================ */
+const bestOf = list => list.reduce((m, r) => Math.max(m, ...(r.h || [0])), 0);
+
+function showSummary(rec, prevBest){
+  const holds = rec.h, max = Math.max(...holds, 1);
+  const total = holds.reduce((a, b) => a + b, 0), best = Math.max(...holds);
+  el("sum-sub").textContent =
+    `${holds.length} cycle${holds.length > 1 ? "s" : ""} · ${rec.b} respirations · rythme ${T().label.toLowerCase()} · ${fmtLong(total)} de rétention cumulée`;
+
+  const chart = el("sum-chart"), axis = el("sum-axis");
+  chart.innerHTML = ""; axis.innerHTML = "";
+  holds.forEach((h, i) => {
+    const col = document.createElement("div"); col.className = "sum-col";
+    const time = document.createElement("div"); time.className = "sum-time"; time.textContent = fmt(h);
+    const bar = document.createElement("div"); bar.className = "sum-bar";
+    bar.style.height = Math.max(4, h / max * 128) + "px";
+    col.append(time, bar); chart.appendChild(col);
+    const a = document.createElement("span"); a.textContent = "C" + (i + 1); axis.appendChild(a);
+  });
+
+  const diff = best - prevBest;
+  const vs = prevBest ? (diff > 0 ? "+" : diff < 0 ? "−" : "") + fmt(Math.abs(diff)) : "—";
+  el("sum-stats").innerHTML = `
+    <div class="stat"><div class="stat-num" style="color:var(--hold)">${fmt(best)}</div><div class="stat-lab">Meilleure</div></div>
+    <div class="stat"><div class="stat-num">${fmt(Math.round(total / holds.length))}</div><div class="stat-lab">Moyenne</div></div>
+    <div class="stat"><div class="stat-num" style="color:${prevBest && diff > 0 ? "var(--recover)" : "var(--ink)"}">${vs}</div><div class="stat-lab">${prevBest && diff > 0 ? "Nouveau record" : "vs record"}</div></div>`;
+  el("summary").hidden = false;
+}
+el("again").addEventListener("click", () => { el("summary").hidden = true; startSession(); });
+el("back-home").addEventListener("click", () => { el("summary").hidden = true; el("home").hidden = false; });
+
+/* ============================================================
+   Historique et calendrier
+   ============================================================ */
+const pad = n => String(n).padStart(2, "0");
+const dayKey = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+
+// les jours se retrouvent aussi à partir de l'historique
+history.forEach(r => { const k = dayKey(new Date(r.d)); if (!days[k]) days[k] = 1; });
+
+function renderHistory(){
+  if (!history.length){ el("card-pb").hidden = true; return; }
+  el("card-pb").hidden = false;
+  const best = Math.max(1, bestOf(history));
+  el("pb-num").textContent = fmt(best);
+  const wrap = el("hist"); wrap.innerHTML = "";
+  history.slice(0, 6).forEach(r => {
+    const row = document.createElement("div"); row.className = "hist-item";
+    const d = document.createElement("div"); d.className = "hist-date";
+    d.textContent = new Date(r.d).toLocaleDateString("fr-FR", { day:"2-digit", month:"short" });
+    const bars = document.createElement("div"); bars.className = "hist-bars";
+    r.h.forEach(h => {
+      const b = document.createElement("div"); b.className = "hist-bar";
+      b.style.height = Math.max(3, h / best * 26) + "px";
+      if (h >= best * .98) b.style.background = "var(--hold)";
+      bars.appendChild(b);
+    });
+    const m = document.createElement("div"); m.className = "hist-best"; m.textContent = fmt(Math.max(...r.h));
+    row.append(d, bars, m); wrap.appendChild(row);
+  });
+}
+
+let calView = (() => { const d = new Date(); return new Date(d.getFullYear(), d.getMonth(), 1); })();
+
+function renderCalendar(){
+  const y = calView.getFullYear(), m = calView.getMonth();
+  const today = new Date(), todayKey = dayKey(today);
+  el("cal-title").textContent = calView.toLocaleDateString("fr-FR", { month:"long", year:"numeric" });
+  el("cal-next").disabled = y > today.getFullYear() || (y === today.getFullYear() && m >= today.getMonth());
+
+  const g = el("cal-grid"); g.innerHTML = "";
+  ["L","M","M","J","V","S","D"].forEach(l => {
+    const h = document.createElement("div"); h.className = "cal-dow"; h.textContent = l; g.appendChild(h);
+  });
+  const lead = (new Date(y, m, 1).getDay() + 6) % 7;      // semaine commençant lundi
+  const n = new Date(y, m + 1, 0).getDate();
+  for (let i = 0; i < lead; i++){ const c = document.createElement("div"); c.className = "cal-day empty"; g.appendChild(c); }
+  let count = 0;
+  for (let d = 1; d <= n; d++){
+    const date = new Date(y, m, d), k = dayKey(date), c = document.createElement("div");
+    c.className = "cal-day"; c.textContent = d;
+    const nb = days[k] || 0;
+    if (nb){ c.classList.add("done"); if (nb > 1) c.classList.add("multi"); count++; }
+    if (k === todayKey) c.classList.add("today");
+    else if (date > today) c.classList.add("future");
+    c.setAttribute("aria-label", date.toLocaleDateString("fr-FR", { day:"numeric", month:"long" })
+      + (nb ? ` : ${nb} séance${nb > 1 ? "s" : ""}` : ""));
+    g.appendChild(c);
+  }
+  el("cal-month").textContent = count;
+
+  // série en cours : jusqu'à aujourd'hui, ou hier si pas encore pratiqué aujourd'hui
+  let streak = 0;
+  const d = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+  if (!days[dayKey(d)]) d.setDate(d.getDate() - 1);
+  while (days[dayKey(d)]){ streak++; d.setDate(d.getDate() - 1); }
+  el("cal-streak").textContent = streak;
+}
+el("cal-prev").addEventListener("click", () => { calView = new Date(calView.getFullYear(), calView.getMonth() - 1, 1); renderCalendar(); });
+el("cal-next").addEventListener("click", () => { calView = new Date(calView.getFullYear(), calView.getMonth() + 1, 1); renderCalendar(); });
+
+/* ============================================================
+   Réglages — rendu et interactions
+   ============================================================ */
+function renderSettings(){
+  const tp = T();
+  el("v-cycles").textContent = S.cycles;
+  el("v-breaths").textContent = S.breaths;
+  el("s-prep").value = S.prep; el("v-prep").textContent = S.prep + " s";
+  el("s-rec").value = S.recSec; el("v-rec").textContent = S.recSec + " s";
+  el("s-rest").value = S.restSec; el("v-rest").textContent = S.restSec + " s";
+  el("s-mvol").value = S.musicVol; el("v-mvol").textContent = S.musicVol + " %";
+  el("s-xf").value = S.crossfade; el("v-xf").textContent = S.crossfade + " s";
+  el("s-gvol").value = S.guideVol; el("v-gvol").textContent = S.guideVol + " %";
+  el("rec-timed-row").hidden = S.recMode !== "timed";
+  el("rest-timed-row").hidden = S.restMode !== "timed";
+  el("t-wake").setAttribute("aria-pressed", String(S.wake));
+  el("t-count").setAttribute("aria-pressed", String(S.countdown));
+  document.querySelectorAll("[data-seg]").forEach(seg => {
+    const cur = S[seg.dataset.seg];
+    seg.querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.v === cur)));
+  });
+
+  el("tempo-name").textContent = tp.label;
+  el("tempo-detail").textContent =
+    `${dec(tp.period)} s par respiration · ${Math.round(60 / tp.period)} respirations/min`;
+
+  const breathing = tp.period * S.breaths;
+  const rec = RECOVERY_IN + (S.recMode === "timed" ? S.recSec : 15);
+  const rest = S.restMode === "off" ? 0 : (S.restMode === "timed" ? S.restSec : 25);
+  const total = (breathing + 75 + rec) * S.cycles + rest * (S.cycles - 1) + S.prep;
+  el("cycle-est").textContent =
+    `≈ ${fmtLong(Math.round(breathing))} de respirations par cycle · séance ≈ ${fmtLong(Math.round(total))} (apnées estimées à 1:15)`;
+}
+
+function renderSoundList(){
+  const box = el("sound-list");
+  if (!catOK){
+    box.innerHTML = "Liste des sons introuvable (<b>sons/sons.json</b>). Elle est générée au déploiement&nbsp;; la séance marche quand même, en silence.";
+    return;
+  }
+  const nv = VOIX.filter(k => CAT.voix[k]).length;
+  const ns = Object.keys(TEMPOS).filter(k => CAT.souffle[k]).length;
+  const nr = CAT.respiration.length, na = CAT.apnee.length;
+  const morceaux = n => `${n} morceau${n > 1 ? "x" : ""}`;
+  box.innerHTML =
+    `<b>${morceaux(nr)}</b> pour les respirations · <b>${morceaux(na)}</b> pour les apnées<br>` +
+    `Voix&nbsp;: <b>${nv}/${VOIX.length}</b> annonces · Souffle&nbsp;: <b>${ns}/3</b> tempos` +
+    (CAT.souffle[S.tempo] ? "" : `<br>Pas de souffle enregistré pour le rythme ${T().label.toLowerCase()}&nbsp;: guidage visuel seul.`);
+}
+
+document.querySelectorAll("[data-step]").forEach(st => {
+  st.addEventListener("click", ev => {
+    const b = ev.target.closest("button[data-d]"); if (!b) return;
+    const d = +b.dataset.d;
+    if (st.dataset.step === "cycles") S.cycles = clamp(S.cycles + d, 1, 12);
+    else S.breaths = clamp(S.breaths + d, 10, 80);
+    save(); renderSettings();
+  });
+});
+
+const bindRange = (id, key, after) => el(id).addEventListener("input", e => {
+  S[key] = +e.target.value; save(); renderSettings(); if (after) after();
+});
+bindRange("s-prep", "prep");
+bindRange("s-rec", "recSec");
+bindRange("s-rest", "restSec");
+bindRange("s-xf", "crossfade");
+bindRange("s-mvol", "musicVol", () => player.setVol(S.musicVol / 100));
+bindRange("s-gvol", "guideVol", () => { if (guideGain) guideGain.gain.value = S.guideVol / 100; });
+
+document.querySelectorAll("[data-seg]").forEach(seg => seg.addEventListener("click", ev => {
+  const b = ev.target.closest("button[data-v]"); if (!b) return;
+  S[seg.dataset.seg] = b.dataset.v; save(); renderSettings();
+  if (seg.dataset.seg === "tempo"){
+    renderSoundList(); resetTempoPreview();
+    if (ctx) decodePath(CAT.souffle[S.tempo]).then(b => { souffleBuf = b; });
+  }
+}));
+
+const bindToggle = (id, key) => el(id).addEventListener("click", () => { S[key] = !S[key]; save(); renderSettings(); });
+bindToggle("t-wake", "wake");
+bindToggle("t-count", "countdown");
+
+/* --- aperçu du rythme : la petite bulle suit le tempo ; « Écouter » joue le souffle --- */
+let prevT0 = performance.now() / 1000, prevIdx = -1, prevPhase = "", prevSound = false, prevSched = 0;
+const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const pclock = () => prevSound ? now() : performance.now() / 1000;
+
+function resetTempoPreview(){ prevT0 = pclock() + .1; prevIdx = -1; prevPhase = ""; prevSched = 0; }
+function stopTempoPreview(){
+  if (prevSound) cancelFuture();
+  prevSound = false;
+  el("tempo-listen").setAttribute("aria-pressed", "false");
+  el("tempo-listen").textContent = "▶ Écouter";
+  resetTempoPreview();
+}
+
+el("tempo-listen").addEventListener("click", async () => {
+  if (prevSound) return stopTempoPreview();
+  await resumeAudio();
+  guideGain.gain.value = S.guideVol / 100;
+  souffleBuf = await decodePath(CAT.souffle[S.tempo]);
+  prevSound = true;
+  el("tempo-listen").setAttribute("aria-pressed", "true");
+  el("tempo-listen").textContent = souffleBuf ? "■ Couper" : "■ (pas de son)";
+  resetTempoPreview();
+});
+
+function previewLoop(){
+  requestAnimationFrame(previewLoop);
+  if (run || el("home").hidden || document.hidden) return;
+  const tp = T(), t = pclock(), e = t - prevT0;
+
+  if (prevSound && souffleBuf){
+    // même principe que la séance : programmation en avance sur l'horloge audio
+    while (prevT0 + prevSched * tp.period < t + LOOKAHEAD){
+      const at = prevT0 + prevSched * tp.period;
+      if (at >= t - .05) playBuf(souffleBuf, at, guideGain);
+      prevSched++;
+    }
+  }
+  if (e < 0 || reduced) return;
+  const i = Math.floor(e / tp.period), p = e - i * tp.period;
+  const ph = p < tp.inhale ? "in" : "out";
+  if (i === prevIdx && ph === prevPhase) return;
+  prevIdx = i; prevPhase = ph;
+  const orb = el("mini-orb");
+  const left = ph === "in" ? tp.inhale - p : tp.period - p;
+  orb.style.transition = `transform ${left}s cubic-bezier(.42,0,.58,1)`;
+  orb.style.transform = ph === "in" ? "scale(1)" : "scale(.48)";
+}
+requestAnimationFrame(previewLoop);
+
+el("start").addEventListener("click", startSession);
+
+/* ============================================================
+   Hors ligne : service worker
+   ============================================================ */
+function setOffline(state, text){
+  const b = el("off-badge");
+  b.hidden = false;
+  b.className = "badge " + state;
+  el("off-text").textContent = text;
+}
+if ("serviceWorker" in navigator && location.protocol !== "file:"){
+  navigator.serviceWorker.addEventListener("message", ev => {
+    const d = ev.data || {};
+    if (d.type === "cache-progress") setOffline("warn", `Mise en cache des sons pour le hors ligne… ${d.done} / ${d.total}`);
+    if (d.type === "cache-done"){
+      if (d.failed) setOffline("warn", `${d.failed} son${d.failed > 1 ? "s" : ""} non mis en cache : rouvre l'app avec du réseau.`);
+      else setOffline("ok", "Prête hors ligne : code et sons enregistrés sur cet appareil.");
+      setTimeout(() => { if (!d.failed) el("off-badge").hidden = true; }, 4000);
+    }
+  });
+  navigator.serviceWorker.register("sw.js").then(reg => {
+    // à chaque ouverture : vérifie que tous les sons sont bien là
+    const ask = () => navigator.serviceWorker.controller && navigator.serviceWorker.controller.postMessage({ type:"check-sounds" });
+    if (navigator.serviceWorker.controller) ask();
+    else navigator.serviceWorker.addEventListener("controllerchange", ask, { once:true });
+    reg.update().catch(() => {});
+  }).catch(() => {});
+}
+
+/* ============================================================
+   Amorçage
+   ============================================================ */
+(async () => {
+  renderSettings(); renderHistory(); renderCalendar();
+  // préréglages versionnés dans le dépôt : appliqués sous les réglages de l'appareil
+  try {
+    const r = await fetch("reglages.json", { cache:"no-cache" });
+    if (r.ok){
+      const preset = await r.json();
+      S = { ...DEFAULTS, ...preset, ...LS.get("souffle.reglages", {}) };
+      sanitize(); renderSettings();
+    }
+  } catch(e){}
+  await loadCatalog();
+})();
+
+})();
+</script>
+</body>
+</html>

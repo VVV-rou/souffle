@@ -1,0 +1,4 @@
+# généré par outils/sons.py (en local) et par le workflow de déploiement
+sons/sons.json
+.DS_Store
+_site/
