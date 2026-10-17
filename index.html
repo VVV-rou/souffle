@@ -505,16 +505,17 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border-radius:50%;bac
 "use strict";
 
 /* ============================================================
-   Tempos — valeurs mesurées sur sons/souffle/*.
-   PROVISOIRES tant que les enregistrements n'existent pas :
-   remplace period (durée totale du fichier, en s) et inhale
-   (début du fichier → début de l'expiration) par les mesures.
-   Aucun étirement n'est appliqué au son.
+   Tempos — valeurs mesurées sur sons/souffle/* (17 oct. 2026).
+   period : début de l'inspiration → début de l'inspiration suivante
+   inhale : début de l'inspiration → début de l'expiration
+   L'orbe se gonfle pendant inhale et se dégonfle jusqu'à period.
+   Aucun étirement n'est appliqué au son. À remesurer si les
+   fichiers de souffle sont réenregistrés.
    ============================================================ */
 const TEMPOS = {
-  lent:     { label:"Lent",     period:4.0, inhale:2.2  },
-  standard: { label:"Standard", period:3.0, inhale:1.65 },
-  rapide:   { label:"Rapide",   period:2.2, inhale:1.2  }
+  lent:     { label:"Lent",     period:5.014, inhale:2.238 },
+  standard: { label:"Standard", period:3.484, inhale:1.706 },
+  rapide:   { label:"Rapide",   period:2.800, inhale:1.392 }
 };
 const VOIX = ["trois","deux","une","retention","inspire","relache","repart","termine"];
 const RECOVERY_IN = 2.3;     // grande inspiration avant la rétention poumons pleins
