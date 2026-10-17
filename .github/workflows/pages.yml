@@ -32,7 +32,7 @@ jobs:
           cp -r index.html manifest.webmanifest sw.js reglages.json icones sons _site/
           find _site/sons -name README.md -delete
           # nouvelle version du cache hors ligne à chaque commit
-          sed -i "s/__VERSION__/${GITHUB_SHA::12}/" _site/sw.js
+          sed -i "s/__VERSION__/${GITHUB_SHA::7}/" _site/sw.js _site/index.html
 
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v4

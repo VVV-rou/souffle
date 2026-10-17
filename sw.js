@@ -39,9 +39,13 @@ self.addEventListener("activate", ev => {
 /* réseau d'abord, avec un délai court pour ne pas faire attendre en réseau faible */
 async function networkFirst(req, cacheName, timeoutMs = 3500){
   const cache = await caches.open(cacheName);
+  // « no-cache » : toujours revérifier auprès du serveur (GitHub Pages autorise 10 min de cache)
+  const fresh = req.mode === "navigate"
+    ? fetch(req.url, { cache:"no-cache", credentials:"same-origin" })
+    : fetch(new Request(req, { cache:"no-cache" }));
   try {
     const res = await Promise.race([
-      fetch(req),
+      fresh,
       new Promise((_, rej) => setTimeout(() => rej(new Error("délai")), timeoutMs))
     ]);
     if (res && res.ok) cache.put(req, res.clone());

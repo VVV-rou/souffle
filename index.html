@@ -495,6 +495,8 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border-radius:50%;bac
       </div>
     </section>
 
+    <p class="row-sub" style="text-align:center;margin:18px 0 0">Version <span id="app-version">__VERSION__</span></p>
+
     <div class="start-bar">
       <button type="button" class="btn-primary" id="start">Démarrer la séance</button>
     </div>
@@ -1628,7 +1630,19 @@ if ("serviceWorker" in navigator && location.protocol !== "file:"){
       setTimeout(() => { if (!d.failed) el("off-badge").hidden = true; }, 4000);
     }
   });
-  navigator.serviceWorker.register("sw.js").then(reg => {
+  // nouvelle version installée : on recharge la page (jamais pendant une séance)
+  let reloading = false;
+  const hadController = !!navigator.serviceWorker.controller;
+  navigator.serviceWorker.addEventListener("controllerchange", () => {
+    if (!hadController || reloading) return;
+    if (run){ document.addEventListener("visibilitychange", () => location.reload(), { once:true }); return; }
+    reloading = true; location.reload();
+  });
+  navigator.serviceWorker.register("sw.js", { updateViaCache:"none" }).then(reg => {
+    // chaque retour sur l'app : cherche une mise à jour
+    document.addEventListener("visibilitychange", () => {
+      if (document.visibilityState === "visible") reg.update().catch(() => {});
+    });
     // à chaque ouverture : vérifie que tous les sons sont bien là
     const ask = () => navigator.serviceWorker.controller && navigator.serviceWorker.controller.postMessage({ type:"check-sounds" });
     if (navigator.serviceWorker.controller) ask();
