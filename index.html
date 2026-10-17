@@ -518,7 +518,10 @@ const TEMPOS = {
   rapide:   { label:"Rapide",   period:2.800, inhale:1.392 }
 };
 const VOIX = ["trois","deux","une","retention","inspire","relache","repart","termine"];
-const RECOVERY_IN = 2.3;     // grande inspiration avant la rétention poumons pleins
+// grande inspiration avant la rétention poumons pleins : la durée de
+// sons/souffle/inspiration (l'inspiration du tempo lent), pour que l'orbe la suive
+const RECOVERY_IN = TEMPOS.lent.inhale;
+const REST_OUT = TEMPOS.lent.period - TEMPOS.lent.inhale;   // expiration lente au début de la reprise
 const LOOKAHEAD = 1.2;       // fenêtre de programmation des sons, en s
 const ZONE_FADE = 2.6;       // fondu croisé respirations <-> apnées
 
@@ -620,13 +623,15 @@ function decodePath(path){
 }
 
 const voixBufs = {};
-let souffleBuf = null;
+let souffleBuf = null, inspBuf = null, expiBuf = null;
 
 /* sons courts : voix + souffle du tempo choisi, prêts avant le premier souffle */
 async function loadGuides(){
   initAudio();
   const jobs = VOIX.map(async k => { voixBufs[k] = await decodePath(CAT.voix[k]); });
   jobs.push((async () => { souffleBuf = await decodePath(CAT.souffle[S.tempo]); })());
+  jobs.push((async () => { inspBuf = await decodePath(CAT.souffle.inspiration); })());
+  jobs.push((async () => { expiBuf = await decodePath(CAT.souffle.expiration); })());
   await Promise.all(jobs);
 }
 
@@ -977,8 +982,10 @@ function enterRecovery(){
   el("orb-sub").textContent = "et retiens";
   el("hint").textContent = "Une grande inspiration, puis bloque poumons pleins.";
   el("hint").classList.remove("pulse");
+  const at = now() + .03;
   orbBreath(1, RECOVERY_IN * 1000);
-  voice("inspire");
+  voice("inspire", at);
+  if (inspBuf) playBuf(inspBuf, at, guideGain);
 }
 
 function enterRecHold(){
@@ -1006,7 +1013,10 @@ function enterRest(){
     ? "Quelques respirations normales. Appuie quand tu es prêt à repartir."
     : "Quelques respirations normales avant de relancer le rythme.";
   el("hint").classList.toggle("pulse", S.restMode === "free");
-  voice("relache");
+  const at = now() + .03;
+  voice("relache", at);
+  if (expiBuf) playBuf(expiBuf, at, guideGain);
+  orbBreath(.52, REST_OUT * 1000);     // l'orbe se vide avec l'expiration, puis respire calmement
 }
 
 function nextCycle(){
@@ -1121,9 +1131,12 @@ function loop(){
 
   if (run.phase === "rest"){
     const e = t - run.t0;
-    const orb = el("orb");
-    orb.style.transitionDuration = "0ms";
-    orb.style.transform = `scale(${.58 + .13 * Math.sin(e * Math.PI * 2 / 5)})`;
+    if (e > REST_OUT){
+      // reprend à 0,52 (fin de l'expiration) et repart vers le haut, sans saut
+      const orb = el("orb");
+      orb.style.transitionDuration = "0ms";
+      orb.style.transform = `scale(${.58 + .13 * Math.sin((e - REST_OUT) * Math.PI * 2 / 5 - .48)})`;
+    }
     if (S.restMode === "timed"){
       const left = run.dur - e;
       el("orb-num").firstChild.nodeValue = String(Math.max(0, Math.ceil(left)));

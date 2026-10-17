@@ -9,6 +9,13 @@ boucle au début de chaque respiration. **Le nom du fichier compte** :
 | `standard.mp3`  | Standard |
 | `rapide.mp3`    | Rapide   |
 
+Plus deux sons ponctuels, tirés du cycle lent :
+
+| Fichier            | Joué                                                        |
+|--------------------|-------------------------------------------------------------|
+| `inspiration.mp3`  | début de la rétention poumons pleins, avec « inspire, et retiens » |
+| `expiration.mp3`   | début de la reprise, avec « relâche »                       |
+
 Extension libre (`.mp3`, `.m4a`, `.wav`).
 
 ## Découpage
@@ -26,7 +33,10 @@ l'inspiration suivante. Aucun étirement n'est appliqué.
 | Rapide   | 2,800 s | 1,392 s     | `Respi_rapide.WAV`, 16,638 → 19,438 s |
 
 Prises MKE 600 + Zoom F3, 96 kHz 32 bits flottant, coupe de 50 Hz, normalisées
-à −24 dBFS RMS, fondus de 6 ms / 25 ms, MP3 160 kb/s 48 kHz.
+à −24 dBFS RMS, MP3 160 kb/s 48 kHz. Fondu d'entrée de l'inspiration : 320 ms
+(lent), 260 ms (standard), 200 ms (rapide) ; fondu de sortie 25 ms.
+`inspiration.mp3` (2,238 s) et `expiration.mp3` (2,776 s) : les deux moitiés du
+cycle lent, au même niveau que `lent.mp3`.
 
 ## Si tu réenregistres
 
